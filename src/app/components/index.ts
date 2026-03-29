@@ -5,7 +5,7 @@
  *   - auth/        Portal selector, staff login, passenger login
  *   - dashboard/   Headers, schedule, health, alerts, maps, analytics widgets
  *   - passenger/   Journey planner, medical guide
- *   - shared/      Generic reusable primitives (ImageWithFallback, etc.)
+ *   - shared/      Generic reusable primitives
  *   - ui/          Radix-based shadcn/ui primitives
  *
  * You can import directly from the sub-folder barrel:
@@ -43,5 +43,3 @@ export { PredictiveScheduling } from './PredictiveScheduling';
 export { PassengerJourneyPlanner } from './PassengerJourneyPlanner';
 export { MedicalPrescription } from './MedicalPrescription';
 
-// ── Shared utilities ──────────────────────────────────────────────────────────
-export { ImageWithFallback } from './figma/ImageWithFallback';
