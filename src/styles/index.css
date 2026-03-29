@@ -1,0 +1,11 @@
+/**
+ * Global stylesheet entry point for Metro Rail Scheduler.
+ *
+ * Import order matters:
+ *   1. fonts.css    — Google Fonts (Inter) + Leaflet z-index fixes
+ *   2. tailwind.css — Tailwind v4 + tw-animate-css
+ *   3. theme.css    — CSS custom properties (light/dark design tokens)
+ */
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
