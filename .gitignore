@@ -39,3 +39,6 @@ Thumbs.db
 .cache/
 .parcel-cache/
 .eslintcache
+
+# Backend SQLite database
+backend/metro.db
