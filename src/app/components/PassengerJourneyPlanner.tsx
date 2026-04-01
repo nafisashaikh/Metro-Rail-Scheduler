@@ -209,11 +209,21 @@ export function PassengerJourneyPlanner({ lines, section, onTrainSelect }: Passe
     // Simulate low-bandwidth loading (realistic for 2G/3G)
     setTimeout(() => {
       try {
+        const fromIndex = selectedLine.stations.indexOf(fromStation);
+        const toIndex = selectedLine.stations.indexOf(toStation);
+        const isForward = toIndex > fromIndex;
+
         const generated =
           section === 'metro'
             ? generateTrainsForStation(fromStation, selectedLine)
             : generateRailwayTrains(fromStation, selectedLine);
-        setTrains(generated);
+
+        const filteredTrains = generated.filter((train) => {
+          const trainIsForward = train.id.includes('-fwd-');
+          return trainIsForward === isForward;
+        });
+
+        setTrains(filteredTrains);
         setLastRefresh(new Date());
         setLoadState('done');
       } catch {

@@ -205,7 +205,7 @@ export function Header({
                       {user.name}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {user.role === 'passenger' ? `Passenger Portal` : (user as any).employeeId}
+                      {user.role === 'passenger' ? `Passenger Portal` : user.employeeId}
                     </p>
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export function Header({
                   <div className="px-3 py-2 rounded-lg">
                     <p className="text-xs text-slate-500 dark:text-slate-400">Department</p>
                     <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {(user as any).department}
+                      {user.department}
                     </p>
                   </div>
                 )}

@@ -76,17 +76,18 @@ export function SatelliteMap({ line, selectedStation, trains = [], onTrainSelect
   const containerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.Layer[]>([]);
   const polylineRef = useRef<L.Polyline | null>(null);
+  const streetLayerRef = useRef<L.Layer | null>(null);
+  const satelliteLayerRef = useRef<L.Layer | null>(null);
   const [activeTrain, setActiveTrain] = useState<Train | null>(null);
   const [activeTrainPosition, setActiveTrainPosition] = useState<[number, number] | null>(null);
 
+  // Map initialization and cleanup
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize map only once
     if (!mapRef.current) {
       mapRef.current = L.map(containerRef.current).setView([centerPoint[0], centerPoint[1]], zoom);
 
-      // Base layer toggle
       const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
       });
@@ -101,35 +102,44 @@ export function SatelliteMap({ line, selectedStation, trains = [], onTrainSelect
         satelliteLayer.addTo(mapRef.current);
       }
 
-      // Store layers for toggling
-      (mapRef.current as any).streetLayer = streetLayer;
-      (mapRef.current as any).satelliteLayer = satelliteLayer;
+      streetLayerRef.current = streetLayer;
+      satelliteLayerRef.current = satelliteLayer;
 
       L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
     }
 
-    // Update map view either to selected station or to global/line center
-    mapRef.current.setView([effectiveViewPoint[0], effectiveViewPoint[1]], effectiveZoom);
-
+    // Cleanup on unmount
     return () => {
-      // Don't destroy map, just update it
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
+  }, []); // Only run once on mount
+
+  // View updates
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.setView([effectiveViewPoint[0], effectiveViewPoint[1]], effectiveZoom);
+    }
   }, [effectiveViewPoint, effectiveZoom]);
 
   // Handle satellite toggle
   useEffect(() => {
     if (!mapRef.current) return;
-    const map = mapRef.current as any;
+    const map = mapRef.current;
+    const streetLyr = streetLayerRef.current;
+    const satelliteLyr = satelliteLayerRef.current;
 
     if (isSatellite) {
-      if (map.streetLayer) map.removeLayer(map.streetLayer);
-      if (map.satelliteLayer && !map.hasLayer(map.satelliteLayer)) {
-        map.addLayer(map.satelliteLayer);
+      if (streetLyr) map.removeLayer(streetLyr);
+      if (satelliteLyr && !map.hasLayer(satelliteLyr)) {
+        map.addLayer(satelliteLyr);
       }
     } else {
-      if (map.satelliteLayer) map.removeLayer(map.satelliteLayer);
-      if (map.streetLayer && !map.hasLayer(map.streetLayer)) {
-        map.addLayer(map.streetLayer);
+      if (satelliteLyr) map.removeLayer(satelliteLyr);
+      if (streetLyr && !map.hasLayer(streetLyr)) {
+        map.addLayer(streetLyr);
       }
     }
   }, [isSatellite]);

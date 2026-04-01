@@ -1,4 +1,5 @@
-import { MetroLine, StationMetrics, Train, TrainHealth, TrainCapacity } from '../types/metro';
+import { MetroLine, StationMetrics, Train } from '../types/metro';
+import { generateTrainHealth, generateTrainCapacity, generateDepartureTimes } from '../utils/trainGenerators';
 
 // ─── Mumbai Western Railway ──────────────────────────────────────────────────
 
@@ -270,63 +271,6 @@ export const maharashtraRailwayLines: MetroLine[] = [
 ];
 
 // ─── Shared generators ────────────────────────────────────────────────────────
-
-const generateTrainHealth = (): TrainHealth => {
-  const engine = 72 + Math.random() * 28;
-  const brakes = 70 + Math.random() * 30;
-  const doors = 78 + Math.random() * 22;
-  const ac = 65 + Math.random() * 35;
-  const overall = (engine + brakes + doors + ac) / 4;
-  let status: TrainHealth['status'];
-  if (overall >= 90) status = 'excellent';
-  else if (overall >= 75) status = 'good';
-  else if (overall >= 60) status = 'fair';
-  else status = 'poor';
-  const last = new Date();
-  last.setDate(last.getDate() - Math.floor(Math.random() * 30));
-  const next = new Date();
-  next.setDate(next.getDate() + Math.floor(Math.random() * 45) + 15);
-  return {
-    overall: Math.round(overall),
-    engine: Math.round(engine),
-    brakes: Math.round(brakes),
-    doors: Math.round(doors),
-    ac: Math.round(ac),
-    lastMaintenance: last.toLocaleDateString('en-IN'),
-    nextMaintenance: next.toLocaleDateString('en-IN'),
-    status,
-  };
-};
-
-const generateTrainCapacity = (time: string): TrainCapacity => {
-  const [hours] = time.split(':').map(Number);
-  const total = 1500;
-  let occ: number;
-  if ((hours >= 8 && hours < 11) || (hours >= 17 && hours < 21)) occ = 0.85 + Math.random() * 0.15;
-  else if ((hours >= 6 && hours < 8) || (hours >= 11 && hours < 17))
-    occ = 0.5 + Math.random() * 0.3;
-  else occ = 0.2 + Math.random() * 0.3;
-  const current = Math.round(total * occ);
-  return {
-    total,
-    current,
-    predicted: Math.round(current * (0.9 + Math.random() * 0.2)),
-    percentage: Math.round((current / total) * 100),
-  };
-};
-
-const generateDepartureTimes = (): string[] => {
-  const times: string[] = [];
-  const now = new Date();
-  for (let h = 5; h <= 23; h++) {
-    for (let m = 0; m < 60; m += 10) {
-      if (h > now.getHours() || (h === now.getHours() && m >= now.getMinutes())) {
-        times.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-      }
-    }
-  }
-  return times;
-};
 
 export const generateRailwayTrains = (station: string, line: MetroLine): Train[] => {
   const times = generateDepartureTimes();

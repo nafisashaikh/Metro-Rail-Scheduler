@@ -179,17 +179,19 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
           </div>
         </div>
 
-        {/* Demo Hints */}
-        <div className="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-          <p className="text-xs text-slate-400 mb-2">Demo Credentials</p>
-          <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-slate-500">
-            {DEMO_USERS.map((u) => (
-              <span key={u.role}>
-                {u.user.employeeId} : {u.password}
-              </span>
-            ))}
+        {/* Demo Hints (only visible in dev) */}
+        {window.location.hostname === 'localhost' && (
+          <div className="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p className="text-xs text-slate-400 mb-2">Demo Credentials</p>
+            <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-slate-500">
+              {DEMO_USERS.map((u) => (
+                <span key={u.role}>
+                  {u.user.employeeId} : {u.password}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

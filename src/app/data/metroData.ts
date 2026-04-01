@@ -1,4 +1,5 @@
-import { MetroLine, Train, TrainHealth, TrainCapacity, StationMetrics } from '../types/metro';
+import { MetroLine, Train, StationMetrics } from '../types/metro';
+import { generateTrainHealth, generateTrainCapacity, generateDepartureTimes } from '../utils/trainGenerators';
 
 // ─── Mumbai Metro Lines ──────────────────────────────────────────────────────
 
@@ -114,14 +115,11 @@ export const mumbaiMetroLines: MetroLine[] = [
       'BKC',
       'Santacruz',
       'Domestic Airport',
-      'Sahar Road',
       'International Airport',
+      'Sahar Road',
+      'Marol Naka',
       'MIDC',
       'SEEPZ',
-      'Marol Naka',
-      'Andheri',
-      'Saki Naka',
-      'Jagruti Nagar',
       'Aarey',
     ],
     stationCoords: [
@@ -141,16 +139,13 @@ export const mumbaiMetroLines: MetroLine[] = [
       { name: 'Shitaladevi', lat: 19.0268, lng: 72.8422 },
       { name: 'Dharavi', lat: 19.044, lng: 72.8556 },
       { name: 'BKC', lat: 19.0601, lng: 72.8665 },
-      { name: 'Santacruz', lat: 19.0815, lng: 72.8356 },
-      { name: 'Domestic Airport', lat: 19.0963, lng: 72.8656 },
-      { name: 'Sahar Road', lat: 19.1072, lng: 72.8671 },
+      { name: 'Santacruz', lat: 19.0815, lng: 72.8500 }, // Shifted slightly east to smooth path
+      { name: 'Domestic Airport', lat: 19.0880, lng: 72.8550 },
       { name: 'International Airport', lat: 19.0938, lng: 72.8602 },
-      { name: 'MIDC', lat: 19.11, lng: 72.87 },
+      { name: 'Sahar Road', lat: 19.1000, lng: 72.8650 },
+      { name: 'Marol Naka', lat: 19.1051, lng: 72.8683 },
+      { name: 'MIDC', lat: 19.1100, lng: 72.8700 },
       { name: 'SEEPZ', lat: 19.1217, lng: 72.8744 },
-      { name: 'Marol Naka', lat: 19.1001, lng: 72.8683 },
-      { name: 'Andheri', lat: 19.1197, lng: 72.8474 },
-      { name: 'Saki Naka', lat: 19.0941, lng: 72.8861 },
-      { name: 'Jagruti Nagar', lat: 19.0822, lng: 72.9073 },
       { name: 'Aarey', lat: 19.152, lng: 72.8571 },
     ],
   },
@@ -249,65 +244,6 @@ export const mumbaiMetroLines: MetroLine[] = [
 ];
 
 // ─── Shared train data generators ────────────────────────────────────────────
-
-const generateTrainHealth = (): TrainHealth => {
-  const engine = 72 + Math.random() * 28;
-  const brakes = 70 + Math.random() * 30;
-  const doors = 78 + Math.random() * 22;
-  const ac = 65 + Math.random() * 35;
-  const overall = (engine + brakes + doors + ac) / 4;
-
-  let status: TrainHealth['status'];
-  if (overall >= 90) status = 'excellent';
-  else if (overall >= 75) status = 'good';
-  else if (overall >= 60) status = 'fair';
-  else status = 'poor';
-
-  const lastDate = new Date();
-  lastDate.setDate(lastDate.getDate() - Math.floor(Math.random() * 30));
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + Math.floor(Math.random() * 45) + 15);
-
-  return {
-    overall: Math.round(overall),
-    engine: Math.round(engine),
-    brakes: Math.round(brakes),
-    doors: Math.round(doors),
-    ac: Math.round(ac),
-    lastMaintenance: lastDate.toLocaleDateString('en-IN'),
-    nextMaintenance: nextDate.toLocaleDateString('en-IN'),
-    status,
-  };
-};
-
-const generateTrainCapacity = (time: string, totalCapacity = 1500): TrainCapacity => {
-  const [hours] = time.split(':').map(Number);
-  let occ: number;
-  if ((hours >= 8 && hours < 11) || (hours >= 17 && hours < 21)) occ = 0.85 + Math.random() * 0.15;
-  else if ((hours >= 6 && hours < 8) || (hours >= 11 && hours < 17))
-    occ = 0.5 + Math.random() * 0.3;
-  else occ = 0.2 + Math.random() * 0.3;
-  const current = Math.round(totalCapacity * occ);
-  return {
-    total: totalCapacity,
-    current,
-    predicted: Math.round(current * (0.9 + Math.random() * 0.2)),
-    percentage: Math.round((current / totalCapacity) * 100),
-  };
-};
-
-const generateDepartureTimes = (startHour = 5, endHour = 23, interval = 10): string[] => {
-  const times: string[] = [];
-  const now = new Date();
-  for (let h = startHour; h <= endHour; h++) {
-    for (let m = 0; m < 60; m += interval) {
-      if (h > now.getHours() || (h === now.getHours() && m >= now.getMinutes())) {
-        times.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-      }
-    }
-  }
-  return times;
-};
 
 export const generateTrainsForStation = (station: string, line: MetroLine): Train[] => {
   const departureTimes = generateDepartureTimes(5, 23, line.networkType === 'metro' ? 8 : 10);

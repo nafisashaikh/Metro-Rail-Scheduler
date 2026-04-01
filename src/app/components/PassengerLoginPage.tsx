@@ -20,19 +20,22 @@ const PASSENGER_ACCOUNTS = [
     id: 'p001',
     name: 'Rahul Mishra',
     username: 'user001',
-    passwordPlain: 'pass123',
+    passwordHash: '9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c', // pass123
     cardNumber: 'MPC-7842',
   },
   {
     id: 'p002',
     name: 'Ananya Singh',
     username: 'user002',
-    passwordPlain: 'metro2024',
+    passwordHash: 'b276ca769fa5a98df338ab412db9d97f4d394519e273d8165bc63c438b6c7d53', // metro2024
     cardNumber: 'MPC-3391',
   },
 ];
 
-const DEMO_CREDS = [{ username: 'user001', password: 'pass123', label: 'Regular Commuter' }];
+const DEMO_CREDS = [
+  { username: 'user001', password: 'pass123', label: 'Regular Commuter' },
+  { username: 'user002', password: 'metro2024', label: 'Frequent Traveler' }
+];
 
 export function PassengerLoginPage({ onLogin, onBack }: PassengerLoginPageProps) {
   const [username, setUsername] = useState('');
@@ -51,10 +54,9 @@ export function PassengerLoginPage({ onLogin, onBack }: PassengerLoginPageProps)
       let matchedUser = null;
 
       for (const account of PASSENGER_ACCOUNTS) {
-        const storedHash = await sha256(account.passwordPlain);
         if (
           account.username.toLowerCase() === username.trim().toLowerCase() &&
-          inputHash === storedHash
+          inputHash === account.passwordHash
         ) {
           matchedUser = account;
           break;
