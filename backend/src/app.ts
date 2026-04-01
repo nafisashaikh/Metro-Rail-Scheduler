@@ -16,9 +16,19 @@ const app = express();
 
 // ─── Security & Parsing ───────────────────────────────────────────────────────
 app.use(helmet());
+
+// Restrict CORS to an explicit list of trusted origins.
+// In development the env var is expected to be set to the Vite dev server origin.
+// Wildcard '*' is intentionally not used in production.
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : process.env.NODE_ENV === 'production'
+    ? [] // deny all in production when not configured
+    : ['http://localhost:5173', 'http://localhost:4173', 'http://localhost:3000'];
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN ?? '*',
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),

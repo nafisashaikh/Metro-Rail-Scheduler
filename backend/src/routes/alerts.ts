@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { getDb } from '../config/database.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
+import { writeLimiter } from '../middleware/rateLimiter.js';
 import type { Alert } from '../types/index.js';
 
 const router = Router();
@@ -96,6 +97,7 @@ const createAlertSchema = z.object({
 
 router.post(
   '/',
+  writeLimiter,
   authenticate,
   requireRole('admin', 'supervisor', 'employee'),
   (req, res) => {
@@ -134,6 +136,7 @@ router.post(
 // PATCH /api/alerts/:id/resolve (staff only)
 router.patch(
   '/:id/resolve',
+  writeLimiter,
   authenticate,
   requireRole('admin', 'supervisor', 'employee'),
   (req, res) => {
@@ -155,6 +158,7 @@ router.patch(
 // DELETE /api/alerts/:id (admin only)
 router.delete(
   '/:id',
+  writeLimiter,
   authenticate,
   requireRole('admin'),
   (req, res) => {

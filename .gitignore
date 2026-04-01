@@ -42,3 +42,5 @@ Thumbs.db
 
 # Backend SQLite database
 backend/metro.db
+backend/metro.db-shm
+backend/metro.db-wal

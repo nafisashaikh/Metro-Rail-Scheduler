@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { getDb } from '../config/database.js';
 import { signToken, authenticate } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
@@ -13,7 +14,7 @@ const staffLoginSchema = z.object({
   password: z.string().min(1),
 });
 
-router.post('/staff/login', async (req, res) => {
+router.post('/staff/login', authLimiter, async (req, res) => {
   const parse = staffLoginSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: 'employeeId and password are required' });
@@ -63,7 +64,7 @@ const passengerLoginSchema = z.object({
   password: z.string().min(1),
 });
 
-router.post('/passenger/login', async (req, res) => {
+router.post('/passenger/login', authLimiter, async (req, res) => {
   const parse = passengerLoginSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: 'username and password are required' });
@@ -107,7 +108,7 @@ router.post('/passenger/login', async (req, res) => {
 
 // ─── Get Current User ─────────────────────────────────────────────────────────
 
-router.get('/me', authenticate, (req, res) => {
+router.get('/me', authLimiter, authenticate, (req, res) => {
   if (!req.user) {
     res.status(401).json({ error: 'Not authenticated' });
     return;
