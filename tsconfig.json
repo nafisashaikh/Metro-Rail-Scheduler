@@ -25,6 +25,7 @@
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
+    "ignoreDeprecations": "6.0",
 
     /* Path aliases */
     "baseUrl": ".",

@@ -19,6 +19,7 @@
 export { PortalSelector } from './PortalSelector';
 export { LoginPage } from './LoginPage';
 export { PassengerLoginPage } from './PassengerLoginPage';
+export { PassengerSignupPage } from './PassengerSignupPage';
 
 // ── Layout / Navigation ───────────────────────────────────────────────────────
 export { Header, PassengerHeader } from './Header';

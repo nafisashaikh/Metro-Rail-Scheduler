@@ -46,6 +46,34 @@ npm run dev
 
 Open `http://localhost:5173` (or the port specified in your terminal) in your browser to view the application.
 
+## Backend API (New)
+
+This repository now includes a backend service in `backend/` for secure authentication and protected APIs.
+
+### Run backend
+
+1. Install backend dependencies:
+   ```bash
+   cd backend
+   npm install
+   copy .env.example .env
+   npm run dev
+   ```
+
+2. Or run from repository root:
+   ```bash
+   npm run backend:dev
+   ```
+
+Backend default URL: `http://localhost:4000`
+
+Available endpoints:
+- `GET /health`
+- `POST /auth/login`
+- `POST /auth/signup/passenger`
+- `GET /auth/me` (requires `Authorization: Bearer <token>`)
+- `GET /schedules` (requires `Authorization: Bearer <token>`)
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -53,6 +81,8 @@ In the project directory, you can run:
 - `npm run dev`: Starts the Vite development server.
 - `npm run build`: Compiles TypeScript and builds the app for production to the `dist` folder.
 - `npm run preview`: Locally previews the production build.
+- `npm run backend:dev`: Starts backend dev server from `backend/`.
+- `npm run backend:typecheck`: Type-checks backend TypeScript code.
 - `npm run lint`: Lints the source files using ESLint.
 - `npm run format`: Formats code using Prettier.
 

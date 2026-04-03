@@ -17,6 +17,7 @@ import {
   PortalSelector,
   LoginPage,
   PassengerLoginPage,
+  PassengerSignupPage,
   Header,
   PassengerHeader,
   DashboardSection,
@@ -25,6 +26,9 @@ import {
 
 // ─── Portal type ──────────────────────────────────────────────────────────────
 type AppPortal = 'selector' | 'staff' | 'passenger';
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:4000`;
+const AUTH_TOKEN_KEY = 'mrs_auth_token';
+const AUTH_PORTAL_KEY = 'mrs_auth_portal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,10 +79,12 @@ export default function App() {
   // ── Passenger state ───────────────────────────────────────────────────────
   const [passengerUser, setPassengerUser] = useState<PassengerUser | null>(null);
   const [passengerSection, setPassengerSection] = useState<SystemSection>('metro');
+  const [passengerAuthMode, setPassengerAuthMode] = useState<'login' | 'signup'>('login');
 
   // ── Shared state ──────────────────────────────────────────────────────────
   const [alerts, setAlerts] = useState<Alert[]>(seedAlerts);
   const [isDark, setIsDark] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
 
   // ── Effects ───────────────────────────────────────────────────────────────
 
@@ -86,6 +92,55 @@ export default function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      const savedPortal = localStorage.getItem(AUTH_PORTAL_KEY) as AppPortal | null;
+
+      if (!token || !savedPortal || (savedPortal !== 'staff' && savedPortal !== 'passenger')) {
+        setIsRestoringSession(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+          localStorage.removeItem(AUTH_PORTAL_KEY);
+          setIsRestoringSession(false);
+          return;
+        }
+
+        const data = (await response.json()) as {
+          user?: User | PassengerUser;
+        };
+
+        if (!data.user) {
+          setIsRestoringSession(false);
+          return;
+        }
+
+        if (savedPortal === 'passenger' && data.user.role === 'passenger') {
+          setPassengerUser(data.user as PassengerUser);
+          setPortal('passenger');
+        } else if (savedPortal === 'staff' && data.user.role !== 'passenger') {
+          setStaffUser(data.user as User);
+          setPortal('staff');
+        }
+      } catch {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_PORTAL_KEY);
+      } finally {
+        setIsRestoringSession(false);
+      }
+    };
+
+    void restoreSession();
+  }, []);
 
   /** Auto-generate random alerts every 90s while staff is logged in. */
   useEffect(() => {
@@ -100,15 +155,30 @@ export default function App() {
 
   // ── Event handlers ────────────────────────────────────────────────────────
 
-  const handleStaffLogin = useCallback((u: User) => setStaffUser(u), []);
+  const handleStaffLogin = useCallback((payload: { user: User; token: string }) => {
+    setStaffUser(payload.user);
+    setPortal('staff');
+    localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
+    localStorage.setItem(AUTH_PORTAL_KEY, 'staff');
+  }, []);
   const handleStaffLogout = useCallback(() => {
     setStaffUser(null);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_PORTAL_KEY);
     setPortal('selector');
   }, []);
 
-  const handlePassengerLogin = useCallback((u: PassengerUser) => setPassengerUser(u), []);
+  const handlePassengerLogin = useCallback((payload: { user: PassengerUser; token: string }) => {
+    setPassengerUser(payload.user);
+    setPortal('passenger');
+    localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
+    localStorage.setItem(AUTH_PORTAL_KEY, 'passenger');
+  }, []);
   const handlePassengerLogout = useCallback(() => {
     setPassengerUser(null);
+    setPassengerAuthMode('login');
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_PORTAL_KEY);
     setPortal('selector');
   }, []);
 
@@ -116,6 +186,9 @@ export default function App() {
     setPortal('selector');
     setStaffUser(null);
     setPassengerUser(null);
+    setPassengerAuthMode('login');
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_PORTAL_KEY);
     setShowAlerts(false);
   }, []);
 
@@ -136,6 +209,16 @@ export default function App() {
   const criticalSectionAlerts = activeAlerts.filter(
     (a) => a.severity === 'critical' && a.section === staffSection
   );
+
+  if (isRestoringSession) {
+    return (
+      <div className={isDark ? 'dark' : ''}>
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300">
+          Restoring session...
+        </div>
+      </div>
+    );
+  }
 
   // ════════════════════════════════════════════════════════════════════════════
   // Render: Portal Selector
@@ -271,7 +354,19 @@ export default function App() {
     if (!passengerUser) {
       return (
         <div className={isDark ? 'dark' : ''}>
-          <PassengerLoginPage onLogin={handlePassengerLogin} onBack={() => setPortal('selector')} />
+          {passengerAuthMode === 'login' ? (
+            <PassengerLoginPage
+              onLogin={handlePassengerLogin}
+              onBack={() => setPortal('selector')}
+              onSwitchToSignup={() => setPassengerAuthMode('signup')}
+            />
+          ) : (
+            <PassengerSignupPage
+              onSignupSuccess={handlePassengerLogin}
+              onBack={() => setPortal('selector')}
+              onSwitchToLogin={() => setPassengerAuthMode('login')}
+            />
+          )}
         </div>
       );
     }

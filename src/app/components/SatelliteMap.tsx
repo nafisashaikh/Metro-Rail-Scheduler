@@ -6,6 +6,8 @@ import { MetroLine, Train } from '../types/metro';
 interface SatelliteMapProps {
   line: MetroLine;
   selectedStation?: string;
+  fromStation?: string;
+  toStation?: string;
   trains?: Train[];
   onTrainSelect?: (train: Train, position: [number, number]) => void;
 }
@@ -13,11 +15,23 @@ interface SatelliteMapProps {
 const INDIA_CENTER: [number, number] = [22.0, 79.0];
 
 // Interactive map view with stations, route, and live train tracking powered by Leaflet + OpenStreetMap (free)
-export function SatelliteMap({ line, selectedStation, trains = [], onTrainSelect }: SatelliteMapProps) {
+export function SatelliteMap({ line, selectedStation, fromStation, toStation, trains = [], onTrainSelect }: SatelliteMapProps) {
   const [fullIndiaView, setFullIndiaView] = useState<boolean>(true);
   const [isSatellite, setIsSatellite] = useState<boolean>(false);
 
-  const coords = line.stationCoords || [];
+  const coords = useMemo(() => {
+    let base = line.stationCoords || [];
+    if (fromStation && toStation) {
+      const idx1 = line.stations.indexOf(fromStation);
+      const idx2 = line.stations.indexOf(toStation);
+      if (idx1 !== -1 && idx2 !== -1) {
+        const start = Math.min(idx1, idx2);
+        const end = Math.max(idx1, idx2);
+        base = base.slice(start, end + 1);
+      }
+    }
+    return base;
+  }, [line, fromStation, toStation]);
 
   const stationPoints = useMemo(
     () => coords.map((station) => [station.lat, station.lng] as [number, number]),
@@ -162,7 +176,7 @@ export function SatelliteMap({ line, selectedStation, trains = [], onTrainSelect
     if (stationPoints.length > 0) {
       polylineRef.current = L.polyline(
         stationPoints.map((p) => [p[0], p[1]] as [number, number]),
-        { color: line.color, weight: 4 }
+        { color: line.color, weight: 4, className: 'animated-route' }
       ).addTo(map);
     }
 
@@ -195,6 +209,11 @@ export function SatelliteMap({ line, selectedStation, trains = [], onTrainSelect
       const isMetro = line.name.includes('Metro') || line.name.includes('Line');
       const icon = isMetro ? '🚇' : '🚂';
       
+      const isFwd = train.id.includes('-fwd-');
+      const arrowRight = `<span style="font-size: 16px; margin-left: -4px; color: ${line.color}; text-shadow: 0 0 2px white;">➔</span>`;
+      const arrowLeft = `<span style="font-size: 16px; margin-right: -4px; color: ${line.color}; text-shadow: 0 0 2px white;">⬅</span>`;
+      const displayIcon = isFwd ? `${icon}${arrowRight}` : `${arrowLeft}${icon}`;
+      
       const healthColor = train.health.overall > 70 ? '#10b981' : train.health.overall > 40 ? '#f59e0b' : '#ef4444';
       const healthStatus = train.health.overall > 70 ? '✓ Operational' : train.health.overall > 40 ? '⚠ Warning' : '✗ Critical';
       
@@ -203,13 +222,17 @@ export function SatelliteMap({ line, selectedStation, trains = [], onTrainSelect
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 32px;
+          font-size: 26px;
           filter: drop-shadow(0 0 3px rgba(0,0,0,0.6));
           animation: pulse 2s infinite;
           cursor: pointer;
           pointer-events: auto;
+          background: rgba(255,255,255,0.8);
+          border-radius: 20px;
+          padding: 2px 6px;
+          border: 1px solid ${line.color};
         ">
-          ${icon}
+          ${displayIcon}
         </div>
       `;
 

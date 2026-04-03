@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { User } from '../types/metro';
+import type { User } from '../types/metro';
 import { Train, Shield, Eye, EyeOff, Lock, LogIn, ArrowLeft } from 'lucide-react';
 
 type StaffRole = 'admin' | 'supervisor' | 'employee';
 
 interface LoginPageProps {
-  onLogin: (user: User) => void;
+  onLogin: (payload: { user: User; token: string }) => void;
   onBack?: () => void;
 }
+
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:4000`;
 
 const DEMO_USERS: { role: StaffRole; user: User; password: string }[] = [
   {
@@ -66,18 +68,35 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
   const handleLogin = async () => {
     setError('');
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
 
-    const match = DEMO_USERS.find(
-      (u) => u.role === selectedRole && u.user.employeeId === employeeId && u.password === password
-    );
+    try {
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: selectedRole,
+          identifier: employeeId.trim(),
+          password,
+        }),
+      });
 
-    if (match) {
-      onLogin(match.user);
-    } else {
-      setError('Invalid credentials.');
+      const data = (await response.json()) as {
+        error?: string;
+        token?: string;
+        user?: User;
+      };
+
+      if (!response.ok || !data.user || !data.token) {
+        setError(data.error ?? 'Invalid credentials.');
+        return;
+      }
+
+      onLogin({ user: data.user, token: data.token });
+    } catch {
+      setError('Authentication failed.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

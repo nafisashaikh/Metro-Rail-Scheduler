@@ -1,43 +1,21 @@
 import { useState, useCallback } from 'react';
-import { PassengerUser } from '../types/metro';
+import type { PassengerUser } from '../types/metro';
 import { User, Lock, Eye, EyeOff, ArrowLeft, Train, Shield } from 'lucide-react';
 
 interface PassengerLoginPageProps {
-  onLogin: (user: PassengerUser) => void;
+  onLogin: (payload: { user: PassengerUser; token: string }) => void;
   onBack: () => void;
+  onSwitchToSignup: () => void;
 }
 
-// ─── SHA-256 via Web Crypto API (zero dependencies, works offline) ─────────────
-async function sha256(message: string): Promise<string> {
-  const data = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-const PASSENGER_ACCOUNTS = [
-  {
-    id: 'p001',
-    name: 'Rahul Mishra',
-    username: 'user001',
-    passwordHash: '9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c', // pass123
-    cardNumber: 'MPC-7842',
-  },
-  {
-    id: 'p002',
-    name: 'Ananya Singh',
-    username: 'user002',
-    passwordHash: 'b276ca769fa5a98df338ab412db9d97f4d394519e273d8165bc63c438b6c7d53', // metro2024
-    cardNumber: 'MPC-3391',
-  },
-];
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:4000`;
 
 const DEMO_CREDS = [
   { username: 'user001', password: 'pass123', label: 'Regular Commuter' },
-  { username: 'user002', password: 'metro2024', label: 'Frequent Traveler' }
+  { username: 'user002', password: 'metro2024', label: 'Frequent Traveler' },
 ];
 
-export function PassengerLoginPage({ onLogin, onBack }: PassengerLoginPageProps) {
+export function PassengerLoginPage({ onLogin, onBack, onSwitchToSignup }: PassengerLoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -50,32 +28,28 @@ export function PassengerLoginPage({ onLogin, onBack }: PassengerLoginPageProps)
     setLoading(true);
 
     try {
-      const inputHash = await sha256(password);
-      let matchedUser = null;
-
-      for (const account of PASSENGER_ACCOUNTS) {
-        if (
-          account.username.toLowerCase() === username.trim().toLowerCase() &&
-          inputHash === account.passwordHash
-        ) {
-          matchedUser = account;
-          break;
-        }
-      }
-
-      await new Promise((r) => setTimeout(r, 600));
-
-      if (matchedUser) {
-        onLogin({
-          id: matchedUser.id,
-          name: matchedUser.name,
-          username: matchedUser.username,
-          cardNumber: matchedUser.cardNumber,
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           role: 'passenger',
-        });
-      } else {
-        setError('Invalid credentials.');
+          identifier: username.trim(),
+          password,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        error?: string;
+        token?: string;
+        user?: PassengerUser;
+      };
+
+      if (!response.ok || !data.user || !data.token) {
+        setError(data.error ?? 'Invalid credentials.');
+        return;
       }
+
+      onLogin({ user: data.user, token: data.token });
     } catch {
       setError('Authentication failed.');
     } finally {
@@ -116,7 +90,7 @@ export function PassengerLoginPage({ onLogin, onBack }: PassengerLoginPageProps)
         <div className="space-y-5">
           <div>
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">
-              Username
+              Username or Email
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -182,6 +156,16 @@ export function PassengerLoginPage({ onLogin, onBack }: PassengerLoginPageProps)
               </span>
             ))}
           </div>
+          <p className="text-sm text-slate-500 mt-5">
+            New passenger?{' '}
+            <button
+              type="button"
+              onClick={onSwitchToSignup}
+              className="text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 font-semibold"
+            >
+              Create an account
+            </button>
+          </p>
         </div>
       </div>
     </div>

@@ -9,3 +9,14 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+/* Map Direction Indicator Animation */
+.animated-route {
+  stroke-dasharray: 12, 12;
+  animation: flow-route 1.5s linear infinite;
+}
+
+@keyframes flow-route {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}

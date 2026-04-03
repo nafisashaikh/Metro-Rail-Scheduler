@@ -1,0 +1,82 @@
+[
+  {
+    "id": "1",
+    "name": "Rajesh Kumar",
+    "role": "admin",
+    "employeeId": "MRS-A-001",
+    "department": "Administration",
+    "identifier": "MRS-A-001",
+    "passwordSaltHex": "83747d63d6b2ec18638cca95b05ce107",
+    "passwordHashHex": "c8756c07405f7a18fde21788df21d9eaf152bd12559da86bb11d94310d213219096eefc0dec75a90cfb264a9cd6aa7779f9b232f70e771677160487147e6d605"
+  },
+  {
+    "id": "2",
+    "name": "Priya Sharma",
+    "role": "supervisor",
+    "employeeId": "MRS-S-042",
+    "department": "Operations",
+    "identifier": "MRS-S-042",
+    "passwordSaltHex": "49d9588e9a59a5591eb47bd90ea47ed5",
+    "passwordHashHex": "ef8782389c886daf8cfe0013408deb2c1511f24621bbbfc2c2026b444984904e81415740e262f04620adcc3de3ea4cf7045bad2bce567bdc46f5e56afb55ee09"
+  },
+  {
+    "id": "3",
+    "name": "Amit Patil",
+    "role": "employee",
+    "employeeId": "MRS-E-187",
+    "department": "Station Management",
+    "identifier": "MRS-E-187",
+    "passwordSaltHex": "e604018c7e2b4d529a89b1ff308df518",
+    "passwordHashHex": "c65441305db9692f115371d55d565f01a2911d778d78348652b58926741c6a82c3592b2b6f8d91247e84c4b268da2aafa3bb6c68f024cde12dc5fa7090e9d1e7"
+  },
+  {
+    "id": "p001",
+    "name": "Rahul Mishra",
+    "role": "passenger",
+    "username": "user001",
+    "cardNumber": "MPC-7842",
+    "identifier": "user001",
+    "passwordSaltHex": "b7aa5cbeb865340125565355cd7c904d",
+    "passwordHashHex": "34a2f96ddf1bd39c81795eff62d0d549a0a4d8337b65b729fd562c00fd14ea775e966a628e763d25676cadfe4d94ba854a26fc083257d8bb3f79fb51e257600d"
+  },
+  {
+    "id": "p002",
+    "name": "Ananya Singh",
+    "role": "passenger",
+    "username": "user002",
+    "cardNumber": "MPC-3391",
+    "identifier": "user002",
+    "passwordSaltHex": "0cf497d5fd59bd90e399a373d9f6465b",
+    "passwordHashHex": "9fb1fc026145f32b683554d0b831f3373761fab47606ef1095fe025441a5e1124a780a30a06ebaeda0ce41460576281a8204b26663b9ed958208815bfc7ea071"
+  },
+  {
+    "id": "p003",
+    "name": "Realtime User",
+    "role": "passenger",
+    "username": "realuser49744@gmail.com",
+    "cardNumber": "MPC-7003",
+    "identifier": "realuser49744@gmail.com",
+    "passwordSaltHex": "d2787434a0cb91a7f1ede9ff3e9dff8a",
+    "passwordHashHex": "ff839eb0ffd8a0082ae3ac943aefb74344db142ac72cc18e4564a6f374ce3cd47aca821817bf64d89d1a2207c605985f8a877e8f83ceef2018ce0de2e23e2da9"
+  },
+  {
+    "id": "p004",
+    "name": "Persist One",
+    "role": "passenger",
+    "username": "persist78192@gmail.com",
+    "cardNumber": "MPC-7004",
+    "identifier": "persist78192@gmail.com",
+    "passwordSaltHex": "5b398213cbc678af33d8a618febc2ed3",
+    "passwordHashHex": "7a9ebdaa8e38fe39221ec936fddb913bd169ef99f071fe452e386652c34985c1f6896b1bdd3cb9e8e0f4305df520a33792fd967f3919e657df0718a63cb288bc"
+  },
+  {
+    "id": "p005",
+    "name": "Persist Two",
+    "role": "passenger",
+    "username": "persist75743@gmail.com",
+    "cardNumber": "MPC-7005",
+    "identifier": "persist75743@gmail.com",
+    "passwordSaltHex": "6f4748dff384aaf021ef330a5835e82a",
+    "passwordHashHex": "86ee953224b6d1bee98df7fa08596bc450e9d785992192b5c4e8c6e662a89acf24eebe9d2560cd6d9a39e6412aad5b0a4c657bea15ebff3a4f24beed3d5b8338"
+  }
+]

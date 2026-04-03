@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   ArrowRight,
 } from 'lucide-react';
+import { SatelliteMap } from './SatelliteMap';
 
 interface PassengerJourneyPlannerProps {
   lines: MetroLine[];
@@ -449,21 +450,33 @@ export function PassengerJourneyPlanner({ lines, section, onTrainSelect }: Passe
 
       {/* ── Train results ── */}
       {loadState === 'done' && (
-        <div className="space-y-3">
-          {/* Summary */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <TrainIcon className="w-4 h-4" />
-              <span style={{ fontWeight: 600 }}>{trains.length} trains</span>
-              <span>from {fromStation}</span>
-              <ChevronRight className="w-3 h-3" />
-              <span>{toStation}</span>
+        <div className="space-y-4">
+          {selectedLine && (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden h-64 relative shadow-sm">
+              <SatelliteMap
+                line={selectedLine}
+                fromStation={fromStation}
+                toStation={toStation}
+                trains={visibleTrains}
+              />
             </div>
-            <div className="flex items-center gap-1.5">
-              <Users className="w-3 h-3 text-slate-400" />
-              <span className="text-xs text-slate-400">Live capacity</span>
+          )}
+
+          <div className="space-y-3">
+            {/* Summary */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                <TrainIcon className="w-4 h-4" />
+                <span style={{ fontWeight: 600 }}>{trains.length} trains</span>
+                <span>from {fromStation}</span>
+                <ChevronRight className="w-3 h-3" />
+                <span>{toStation}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3 h-3 text-slate-400" />
+                <span className="text-xs text-slate-400">Live capacity</span>
+              </div>
             </div>
-          </div>
 
           {trains.length === 0 ? (
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center">
@@ -502,6 +515,7 @@ export function PassengerJourneyPlanner({ lines, section, onTrainSelect }: Passe
               )}
             </>
           )}
+        </div>
         </div>
       )}
     </div>
