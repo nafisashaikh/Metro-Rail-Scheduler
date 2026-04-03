@@ -405,10 +405,10 @@ export function PassengerJourneyPlanner({ lines, section, onTrainSelect }: Passe
       {/* ── Loading skeletons (low-bandwidth UX) ── */}
       {loadState === 'loading' && (
         <div className="space-y-3">
-          <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <div className="w-3 h-3 border-2 border-slate-300 border-t-orange-500 rounded-full animate-spin" />
             Fetching live train data…
-          </p>
+          </div>
           {[...Array(3)].map((_, i) => (
             <SkeletonTrainCard key={i} />
           ))}

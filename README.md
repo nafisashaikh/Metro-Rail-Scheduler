@@ -11,25 +11,21 @@ The original project design is available at [Figma Design](https://www.figma.com
 ## Technologies Used
 
 - **Framework**: React 18 with Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: Material-UI (MUI), Radix UI
-- **Maps**: Leaflet (`react-leaflet` compatible)
-- **Animations**: Framer Motion
-- **Icons**: Lucide React, MUI Icons
+- **UI Components**: Radix UI, Material-UI
+- **Styling**: Tailwind CSS 4
+- **Maps**: Leaflet with OpenStreetMap
+- **Charts**: Recharts
+- **State Management**: React Context & Hooks
+- **Routing**: React Router 7
+- **Form Management**: React Hook Form
+- **Backend**: Node.js with Express, JWT authentication
 
-## Getting Started
+## Installation
 
-### Prerequisites
-
-Ensure you have Node.js and `npm` (or `pnpm`/`yarn`) installed on your system.
-
-### Installation
-
-1. Clone the repository (if you haven't already):
+1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd metro-rail-scheduler
+   git clone https://github.com/nafisashaikh/Metro-Rail-Scheduler.git
+   cd Metro-Rail-Scheduler
    ```
 
 2. Install dependencies:
@@ -37,7 +33,7 @@ Ensure you have Node.js and `npm` (or `pnpm`/`yarn`) installed on your system.
    npm install
    ```
 
-### Running the Application
+## Running the Application
 
 To start the development server, run:
 ```bash
