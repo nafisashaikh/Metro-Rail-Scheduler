@@ -88,7 +88,8 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
   // Direct Leaflet map (avoid react-leaflet context issues with React 18)
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const markersRef = useRef<L.Layer[]>([]);
+  const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const stationMarkersRef = useRef<L.Layer[]>([]);
   const polylineRef = useRef<L.Polyline | null>(null);
   const streetLayerRef = useRef<L.Layer | null>(null);
   const satelliteLayerRef = useRef<L.Layer | null>(null);
@@ -158,14 +159,10 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
     }
   }, [isSatellite]);
 
-  // Update markers
+  // Update route polyline and station markers (less frequent changes)
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
-
-    // Clear existing markers
-    markersRef.current.forEach((marker) => map.removeLayer(marker));
-    markersRef.current = [];
 
     // Remove existing polyline
     if (polylineRef.current) {
@@ -180,6 +177,10 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
       ).addTo(map);
     }
 
+    // Clear and recreate station markers
+    stationMarkersRef.current.forEach((marker) => map.removeLayer(marker));
+    stationMarkersRef.current = [];
+
     // Add station markers
     stationPoints.forEach((point, idx) => {
       const isSelected = selectedStation && coords[idx]?.name === selectedStation;
@@ -193,19 +194,25 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
 
       marker.bindPopup(`<strong>${coords[idx]?.name || `Station ${idx + 1}`}</strong>`);
       marker.on('click', () => {
-        // center map to the selected station and open popup
         setFullIndiaView(false);
         if (map) {
           map.setView([point[0], point[1]], 13, { animate: true });
         }
       });
 
-      markersRef.current.push(marker);
+      stationMarkersRef.current.push(marker);
     });
+  }, [stationPoints, selectedStation, line.color, coords]);
 
-    // Add train markers with live status
+  // Update train markers (optimized for frequent changes with train positions)
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+
+    // For each train, update or create marker
     trainsPoints.forEach((trainData) => {
       const train = trainData.train;
+      const trainKey = train.id;
       const isMetro = line.name.includes('Metro') || line.name.includes('Line');
       const icon = isMetro ? '🚇' : '🚂';
       
@@ -236,86 +243,85 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
         </div>
       `;
 
-      const customMarker = L.marker([trainData.position[0], trainData.position[1]], {
-        icon: L.divIcon({
-          html: markerHtml,
-          iconSize: [48, 48],
-          className: 'train-icon-marker leaflet-interactive',
-        }),
-        interactive: true,
-        riseOnHover: true,
-        title: `${isMetro ? 'Metro' : 'Rail'} Train ${train.id}`,
-        zIndexOffset: 1000,
-      });
+      // Check if marker exists
+      let marker = markersRef.current.get(trainKey);
+      
+      if (marker) {
+        // Update existing marker position
+        marker.setLatLng([trainData.position[0], trainData.position[1]]);
+      } else {
+        // Create new marker
+        marker = L.marker([trainData.position[0], trainData.position[1]], {
+          icon: L.divIcon({
+            html: markerHtml,
+            iconSize: [48, 48],
+            className: 'train-icon-marker leaflet-interactive',
+          }),
+          interactive: true,
+          riseOnHover: true,
+          title: `${isMetro ? 'Metro' : 'Rail'} Train ${train.id}`,
+          zIndexOffset: 1000,
+        });
 
-      customMarker.on('click', () => {
-        setActiveTrain(train);
-        setActiveTrainPosition(trainData.position);
-        if (map) {
-          map.setView(trainData.position, 12, { animate: true });
-        }
-        customMarker.openPopup();
-        if (onTrainSelect) {
-          onTrainSelect(train, trainData.position);
-        }
-      });
+        marker.on('click', () => {
+          setActiveTrain(train);
+          setActiveTrainPosition(trainData.position);
+          if (map) {
+            map.setView(trainData.position, 12, { animate: true });
+          }
+          marker.openPopup();
+          if (onTrainSelect) {
+            onTrainSelect(train, trainData.position);
+          }
+        });
 
-      const popupContent = `
-        <div style="font-size: 12px; min-width: 240px; font-family: sans-serif;">
-          <div style="margin-bottom: 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">
-            <strong style="font-size: 13px;">${icon} ${isMetro ? 'Metro' : 'Rail'} Train ${train.id}</strong>
-          </div>
-          <div style="margin-bottom: 6px;">
-            <strong style="color: ${healthColor};">● ${healthStatus}</strong><br/>
-            <span style="color: #666;">Health: ${Math.round(train.health.overall)}%</span>
-          </div>
-          <div style="background: #f3f4f6; padding: 6px; border-radius: 4px; margin-bottom: 6px;">
-            <strong>Status: Between Stations</strong><br/>
-            <span style="color: #0891b2; font-weight: bold; font-size: 13px;">
-              ${trainData.currentStation} → ${trainData.nextStation}
-            </span><br/>
-            <span style="color: #666; font-size: 11px;">Progress: ${trainData.progress}%</span>
-          </div>
-          <div style="border-top: 1px solid #e5e7eb; padding-top: 6px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-              <span>Capacity:</span>
-              <strong>${train.capacity.percentage}%</strong>
+        const popupContent = `
+          <div style="font-size: 12px; min-width: 240px; font-family: sans-serif;">
+            <div style="margin-bottom: 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">
+              <strong style="font-size: 13px;">${icon} ${isMetro ? 'Metro' : 'Rail'} Train ${train.id}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>Passengers:</span>
-              <strong>${train.capacity.current}/${train.capacity.total}</strong>
+            <div style="margin-bottom: 6px;">
+              <strong style="color: ${healthColor};">● ${healthStatus}</strong><br/>
+              <span style="color: #666;">Health: ${Math.round(train.health.overall)}%</span>
+            </div>
+            <div style="background: #f3f4f6; padding: 6px; border-radius: 4px; margin-bottom: 6px;">
+              <strong>Status: Between Stations</strong><br/>
+              <span style="color: #0891b2; font-weight: bold; font-size: 13px;">
+                ${trainData.currentStation} → ${trainData.nextStation}
+              </span><br/>
+              <span style="color: #666; font-size: 11px;">Progress: ${trainData.progress}%</span>
+            </div>
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 6px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                <span>Capacity:</span>
+                <strong>${train.capacity.percentage}%</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Passengers:</span>
+                <strong>${train.capacity.current}/${train.capacity.total}</strong>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
 
-      customMarker.bindPopup(popupContent);
-      markersRef.current.push(customMarker);
-      customMarker.addTo(map);
-
-      // Add invisible but clickable hit area for better UX on small icon
-      const hitCircle = L.circleMarker(trainData.position, {
-        radius: 18,
-        color: healthColor,
-        opacity: 0,
-        fillOpacity: 0,
-        interactive: true,
-      }).addTo(map);
-
-      hitCircle.on('click', () => {
-        setActiveTrain(train);
-        setActiveTrainPosition(trainData.position);
-        if (map) {
-          map.setView(trainData.position, 12, { animate: true });
-        }
-        customMarker.openPopup();
-        if (onTrainSelect) {
-          onTrainSelect(train, trainData.position);
-        }
-      });
-      markersRef.current.push(hitCircle);
+        marker.bindPopup(popupContent);
+        marker.addTo(map);
+        markersRef.current.set(trainKey, marker);
+      }
     });
-  }, [stationPoints, trainsPoints, selectedStation, trains, line.color, coords]);
+
+    // Remove markers for trains that no longer exist
+    const trainIds = new Set(trainsPoints.map((tp) => tp.train.id));
+    Array.from(markersRef.current.keys()).forEach((trainId) => {
+      if (!trainIds.has(trainId)) {
+        const marker = markersRef.current.get(trainId);
+        if (marker && map.hasLayer(marker)) {
+          map.removeLayer(marker);
+        }
+        markersRef.current.delete(trainId);
+      }
+    });
+  }, [trainsPoints, line.color, line.name, onTrainSelect]);
 
   return (
     <div className="relative h-full w-full rounded-xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
