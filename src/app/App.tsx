@@ -399,23 +399,7 @@ export default function App() {
           <AnnouncementTicker alerts={publicAlerts} />
 
           {/* ── Main content ── */}
-          <main className="max-w-screen-2xl mx-auto px-4 py-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-slate-900 dark:text-white" style={{ fontWeight: 700 }}>
-                  {passengerSection === 'metro'
-                    ? '🚇 Mumbai Metro — Passenger Info'
-                    : '🚂 Maharashtra Railway — Passenger Info'}
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Welcome, {passengerUser.name} · Live schedules, journey planner & travel guide
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live
-              </div>
-            </div>
+          <main className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 py-3 sm:py-5">
 
             <DashboardSection
               key={`passenger-${passengerSection}`}

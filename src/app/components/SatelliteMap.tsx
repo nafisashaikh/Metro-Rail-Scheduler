@@ -12,13 +12,25 @@ interface SatelliteMapProps {
   onTrainSelect?: (train: Train, position: [number, number]) => void;
 }
 
-const INDIA_CENTER: [number, number] = [22.0, 79.0];
+interface TrainDetailPanel {
+  train: Train;
+  position: [number, number];
+  currentStation: string;
+  nextStation: string;
+}
 
-// Interactive map view with stations, route, and live train tracking powered by Leaflet + OpenStreetMap (free)
-export function SatelliteMap({ line, selectedStation, fromStation, toStation, trains = [], onTrainSelect }: SatelliteMapProps) {
-  const [fullIndiaView, setFullIndiaView] = useState<boolean>(true);
-  const [isSatellite, setIsSatellite] = useState<boolean>(false);
+export function SatelliteMap({
+  line,
+  selectedStation,
+  fromStation,
+  toStation,
+  trains = [],
+  onTrainSelect,
+}: SatelliteMapProps) {
+  const [isSatellite, setIsSatellite] = useState(false);
+  const [activePanel, setActivePanel] = useState<TrainDetailPanel | null>(null);
 
+  // Slice coords to journey segment when from+to given
   const coords = useMemo(() => {
     let base = line.stationCoords || [];
     if (fromStation && toStation) {
@@ -34,55 +46,35 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
   }, [line, fromStation, toStation]);
 
   const stationPoints = useMemo(
-    () => coords.map((station) => [station.lat, station.lng] as [number, number]),
+    () => coords.map((s) => [s.lat, s.lng] as [number, number]),
     [coords]
   );
 
-  const selectedCoord = selectedStation ? coords.find((c) => c.name === selectedStation) : null;
-  const centerPoint: [number, number] = fullIndiaView
-    ? INDIA_CENTER
-    : selectedCoord
-    ? [selectedCoord.lat, selectedCoord.lng]
-    : stationPoints.length > 0
-    ? stationPoints[Math.floor(stationPoints.length / 2)]
-    : INDIA_CENTER;
-
-  const zoom = fullIndiaView ? 5 : 10;
-
-  // If a station is selected, ensure we focus it regardless of fullIndiaView state
-  const effectiveViewPoint: [number, number] = selectedCoord ? [selectedCoord.lat, selectedCoord.lng] : centerPoint;
-  const effectiveZoom = selectedCoord ? 13 : zoom;
+  const overallHealth =
+    trains.length > 0
+      ? Math.round(trains.reduce((s, t) => s + t.health.overall, 0) / trains.length)
+      : 100;
 
   const trainsPoints = useMemo(() => {
     if (stationPoints.length === 0) return [];
-    // Position trains between stations for realistic tracking
     return trains.map((train, idx) => {
-      const progressPercent = (train.id.charCodeAt(0) + idx * 13) % 100;
-      const stationIndex = Math.floor((stationPoints.length - 1) * (progressPercent / 100));
-      const nextStationIndex = Math.min(stationIndex + 1, stationPoints.length - 1);
-
-      const currentStation = coords[stationIndex];
-      const nextStation = coords[nextStationIndex];
-      const progress = (progressPercent / 100) % 1;
-
-      // Interpolate position between stations
-      const lat = currentStation.lat + (nextStation.lat - currentStation.lat) * progress;
-      const lng = currentStation.lng + (nextStation.lng - currentStation.lng) * progress;
-
+      const pct = (train.id.charCodeAt(0) + idx * 13) % 100;
+      const si = Math.floor((stationPoints.length - 1) * (pct / 100));
+      const ni = Math.min(si + 1, stationPoints.length - 1);
+      const cur = coords[si];
+      const nxt = coords[ni];
+      const prog = (pct / 100) % 1;
+      const lat = cur.lat + (nxt.lat - cur.lat) * prog;
+      const lng = cur.lng + (nxt.lng - cur.lng) * prog;
       return {
         position: [lat, lng] as [number, number],
         train,
-        currentStation: currentStation.name,
-        nextStation: nextStation.name,
-        progress: Math.round(progress * 100),
+        currentStation: cur.name,
+        nextStation: nxt.name,
       };
     });
   }, [trains, stationPoints, coords]);
 
-  const overallHealth = trains.length > 0 ? Math.round(trains.reduce((sum, t) => sum + t.health.overall, 0) / trains.length) : 100;
-
-
-  // Direct Leaflet map (avoid react-leaflet context issues with React 18)
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
@@ -90,286 +82,383 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
   const polylineRef = useRef<L.Polyline | null>(null);
   const streetLayerRef = useRef<L.Layer | null>(null);
   const satelliteLayerRef = useRef<L.Layer | null>(null);
-  const [activeTrain, setActiveTrain] = useState<Train | null>(null);
-  const [activeTrainPosition, setActiveTrainPosition] = useState<[number, number] | null>(null);
 
-  // Map initialization and cleanup
+  // Init once
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || mapRef.current) return;
 
-    if (!mapRef.current) {
-      mapRef.current = L.map(containerRef.current).setView([centerPoint[0], centerPoint[1]], zoom);
+    const center: [number, number] =
+      stationPoints.length > 0
+        ? stationPoints[Math.floor(stationPoints.length / 2)]
+        : [19.076, 72.877];
 
-      const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-      });
+    mapRef.current = L.map(containerRef.current, { zoomControl: false }).setView(center, 11);
 
-      const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '&copy; Esri',
-      });
+    const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+    });
+    const satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri' }
+    );
 
-      if (!isSatellite) {
-        streetLayer.addTo(mapRef.current);
-      } else {
-        satelliteLayer.addTo(mapRef.current);
-      }
+    street.addTo(mapRef.current);
+    streetLayerRef.current = street;
+    satelliteLayerRef.current = satellite;
 
-      streetLayerRef.current = streetLayer;
-      satelliteLayerRef.current = satelliteLayer;
+    L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
 
-      L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
-    }
-
-    // Cleanup on unmount
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
+      mapRef.current?.remove();
+      mapRef.current = null;
     };
-  }, []); // Only run once on mount
+  }, []);
 
-  // View updates
+  // Fit to route
   useEffect(() => {
-    if (mapRef.current) {
-      mapRef.current.setView([effectiveViewPoint[0], effectiveViewPoint[1]], effectiveZoom);
+    if (!mapRef.current || stationPoints.length === 0) return;
+    if (stationPoints.length === 1) {
+      mapRef.current.setView(stationPoints[0], 14);
+    } else {
+      mapRef.current.fitBounds(
+        L.latLngBounds(stationPoints.map((p) => L.latLng(p[0], p[1]))),
+        { padding: [40, 40], animate: true }
+      );
     }
-  }, [effectiveViewPoint, effectiveZoom]);
+  }, [stationPoints]);
 
-  // Handle satellite toggle
+  // Satellite toggle
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
-    const streetLyr = streetLayerRef.current;
-    const satelliteLyr = satelliteLayerRef.current;
-
     if (isSatellite) {
-      if (streetLyr) map.removeLayer(streetLyr);
-      if (satelliteLyr && !map.hasLayer(satelliteLyr)) {
-        map.addLayer(satelliteLyr);
-      }
+      if (streetLayerRef.current) map.removeLayer(streetLayerRef.current);
+      if (satelliteLayerRef.current && !map.hasLayer(satelliteLayerRef.current))
+        map.addLayer(satelliteLayerRef.current);
     } else {
-      if (satelliteLyr) map.removeLayer(satelliteLyr);
-      if (streetLyr && !map.hasLayer(streetLyr)) {
-        map.addLayer(streetLyr);
-      }
+      if (satelliteLayerRef.current) map.removeLayer(satelliteLayerRef.current);
+      if (streetLayerRef.current && !map.hasLayer(streetLayerRef.current))
+        map.addLayer(streetLayerRef.current);
     }
   }, [isSatellite]);
 
-  // Update route polyline and station markers (less frequent changes)
+  // Route + station markers
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
 
-    // Remove existing polyline
-    if (polylineRef.current) {
-      map.removeLayer(polylineRef.current);
-    }
-
-    // Add route polyline
+    if (polylineRef.current) map.removeLayer(polylineRef.current);
     if (stationPoints.length > 0) {
-      polylineRef.current = L.polyline(
-        stationPoints.map((p) => [p[0], p[1]] as [number, number]),
-        { color: line.color, weight: 4, className: 'animated-route' }
-      ).addTo(map);
+      polylineRef.current = L.polyline(stationPoints, {
+        color: line.color,
+        weight: 5,
+        opacity: 0.9,
+      }).addTo(map);
     }
 
-    // Clear and recreate station markers
-    stationMarkersRef.current.forEach((marker) => map.removeLayer(marker));
+    stationMarkersRef.current.forEach((m) => map.removeLayer(m));
     stationMarkersRef.current = [];
 
-    // Add station markers
-    stationPoints.forEach((point, idx) => {
-      const isSelected = selectedStation && coords[idx]?.name === selectedStation;
-      const marker = L.circleMarker([point[0], point[1]], {
-        radius: isSelected ? 10 : 6,
+    stationPoints.forEach((pt, idx) => {
+      const stName = coords[idx]?.name ?? '';
+      const isFrom = stName === fromStation;
+      const isTo = stName === toStation;
+      const isSelected = stName === selectedStation;
+      const isEndpoint = isFrom || isTo;
+
+      const marker = L.circleMarker(pt, {
+        radius: isEndpoint ? 10 : isSelected ? 9 : 6,
         color: line.color,
-        fillColor: isSelected ? line.color : '#ffffff',
+        fillColor: isFrom ? '#3b82f6' : isTo ? '#ef4444' : isSelected ? line.color : '#ffffff',
         fillOpacity: 1,
-        interactive: true,
+        weight: isEndpoint ? 3 : 2,
+        interactive: false,
       }).addTo(map);
 
-      marker.on('click', () => {
-        setFullIndiaView(false);
-        if (map) {
-          map.setView([point[0], point[1]], 13, { animate: true });
-        }
-      });
+      if (isEndpoint || isSelected) {
+        marker.bindTooltip(stName, {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -10],
+          className: 'stn-tip',
+        });
+      }
 
       stationMarkersRef.current.push(marker);
     });
-  }, [stationPoints, selectedStation, line.color, coords]);
+  }, [stationPoints, selectedStation, fromStation, toStation, line.color, coords]);
 
-  // Update train markers (optimized for frequent changes with train positions)
+  // Train markers — click shows details panel + zoom
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
 
-    // For each train, update or create marker
-    trainsPoints.forEach((trainData) => {
-      const train = trainData.train;
-      const trainKey = train.id;
+    trainsPoints.forEach((td) => {
+      const { train, position, currentStation, nextStation } = td;
+      const key = train.id;
       const isMetro = line.name.includes('Metro') || line.name.includes('Line');
       const icon = isMetro ? '🚇' : '🚂';
-      
       const isFwd = train.id.includes('-fwd-');
-      const arrowRight = `<span style="font-size: 16px; margin-left: -4px; color: ${line.color}; text-shadow: 0 0 2px white;">➔</span>`;
-      const arrowLeft = `<span style="font-size: 16px; margin-right: -4px; color: ${line.color}; text-shadow: 0 0 2px white;">⬅</span>`;
-      const displayIcon = isFwd ? `${icon}${arrowRight}` : `${arrowLeft}${icon}`;
-      
+      const statusColor =
+        train.health.overall > 70 ? '#10b981' : train.health.overall > 40 ? '#f59e0b' : '#ef4444';
 
-      
-      const markerHtml = `
+      const html = `
         <div style="
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 26px;
-          filter: drop-shadow(0 0 3px rgba(0,0,0,0.6));
-          animation: pulse 2s infinite;
-          cursor: pointer;
-          pointer-events: auto;
-          background: rgba(255,255,255,0.8);
-          border-radius: 20px;
-          padding: 2px 6px;
-          border: 1px solid ${line.color};
+          position:relative;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:20px;
+          background:rgba(255,255,255,0.95);
+          border-radius:18px;
+          padding:4px 8px;
+          border:2.5px solid ${line.color};
+          box-shadow:0 2px 10px rgba(0,0,0,0.22);
+          cursor:pointer;
+          white-space:nowrap;
         ">
-          ${displayIcon}
-        </div>
-      `;
+          ${isFwd ? '' : '◀ '}${icon}${isFwd ? ' ▶' : ''}
+          <span style="
+            position:absolute;
+            top:-4px;right:-4px;
+            width:11px;height:11px;
+            background:${statusColor};
+            border-radius:50%;
+            border:2px solid #fff;
+            animation:lp 1.4s infinite;
+          "></span>
+        </div>`;
 
-      // Check if marker exists
-      let marker = markersRef.current.get(trainKey);
-      
+      let marker = markersRef.current.get(key);
+
       if (marker) {
-        // Update existing marker position and popup
-        marker.setLatLng([trainData.position[0], trainData.position[1]]);
+        marker.setLatLng(position);
+        // update icon to refresh status dot color
+        marker.setIcon(
+          L.divIcon({ html, iconSize: [56, 36], iconAnchor: [28, 18], className: 'train-mk' })
+        );
       } else {
-        // Create new marker
-        marker = L.marker([trainData.position[0], trainData.position[1]], {
-          icon: L.divIcon({
-            html: markerHtml,
-            iconSize: [48, 48],
-            className: 'train-icon-marker leaflet-interactive',
-          }),
+        marker = L.marker(position, {
+          icon: L.divIcon({ html, iconSize: [56, 36], iconAnchor: [28, 18], className: 'train-mk' }),
           interactive: true,
           riseOnHover: true,
-          title: `${isMetro ? 'Metro' : 'Rail'} Train ${train.id}`,
           zIndexOffset: 1000,
         });
 
         marker.on('click', () => {
-          setActiveTrain(train);
-          setActiveTrainPosition(trainData.position);
-          if (map) {
-            map.setView(trainData.position, 12, { animate: true });
-          }
-          if (onTrainSelect) {
-            onTrainSelect(train, trainData.position);
-          }
+          // Zoom in on train
+          map.setView(position, Math.max(map.getZoom(), 14), { animate: true });
+
+          // Show detail panel
+          setActivePanel({ train, position, currentStation, nextStation });
+
+          if (onTrainSelect) onTrainSelect(train, position);
         });
+
+        marker.bindTooltip(`${train.id}`, {
+          direction: 'top',
+          offset: [0, -22],
+          className: 'train-tip',
+        });
+
         marker.addTo(map);
-        markersRef.current.set(trainKey, marker);
+        markersRef.current.set(key, marker);
       }
     });
 
-    // Remove markers for trains that no longer exist
-    const trainIds = new Set(trainsPoints.map((tp) => tp.train.id));
-    Array.from(markersRef.current.keys()).forEach((trainId) => {
-      if (!trainIds.has(trainId)) {
-        const marker = markersRef.current.get(trainId);
-        if (marker && map.hasLayer(marker)) {
-          map.removeLayer(marker);
-        }
-        markersRef.current.delete(trainId);
+    // Cleanup stale
+    const ids = new Set(trainsPoints.map((t) => t.train.id));
+    markersRef.current.forEach((m, id) => {
+      if (!ids.has(id)) {
+        if (map.hasLayer(m)) map.removeLayer(m);
+        markersRef.current.delete(id);
       }
     });
   }, [trainsPoints, line.color, line.name, onTrainSelect]);
 
+  const healthColor =
+    overallHealth > 70 ? '#10b981' : overallHealth > 40 ? '#f59e0b' : '#ef4444';
+
   return (
-    <div className="relative h-full w-full rounded-xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
+    <div className="relative h-full w-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
       <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
+        @keyframes lp {
+          0%,100% { opacity:1; transform:scale(1); }
+          50% { opacity:.4; transform:scale(1.4); }
         }
-        .train-icon-marker { 
-          background: none !important;
-          border: none !important;
-          pointer-events: auto !important;
-          cursor: pointer !important;
+        .train-mk { background:none !important; border:none !important; }
+        .stn-tip, .train-tip {
+          background:rgba(15,23,42,.92) !important;
+          border:none !important;
+          color:#f1f5f9 !important;
+          font-size:11px !important;
+          font-weight:600 !important;
+          padding:3px 8px !important;
+          border-radius:6px !important;
+          box-shadow:0 2px 8px rgba(0,0,0,.3) !important;
+          white-space:nowrap !important;
         }
-        .train-icon-marker div {
-          pointer-events: auto !important;
-          cursor: pointer !important;
-        }
+        .stn-tip::before,.train-tip::before { display:none !important; }
+        .leaflet-popup { display:none !important; }
       `}</style>
+
       <div ref={containerRef} className="h-full w-full" />
 
-      <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
-        <div className="flex gap-2 rounded-full bg-white/90 dark:bg-slate-900/80 p-1 shadow-sm backdrop-blur border border-slate-200 dark:border-slate-700">
-          <button
-            onClick={() => setFullIndiaView(true)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${fullIndiaView ? 'bg-orange-600 text-white border-orange-600' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
-            type="button"
-          >
-            India
-          </button>
-          <button
-            onClick={() => setFullIndiaView(false)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${!fullIndiaView ? 'bg-orange-600 text-white border-orange-600' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
-            type="button"
-          >
-            Line
-          </button>
+      {/* Street / Satellite toggle */}
+      <div className="absolute top-3 left-3 z-20">
+        <div className="flex gap-1 rounded-full bg-white/90 dark:bg-slate-900/85 p-1 shadow backdrop-blur border border-slate-200 dark:border-slate-700">
           <button
             onClick={() => setIsSatellite(false)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${!isSatellite ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${!isSatellite ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'text-slate-500 dark:text-slate-400'}`}
             type="button"
           >
             Street
           </button>
           <button
             onClick={() => setIsSatellite(true)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${isSatellite ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${isSatellite ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'text-slate-500 dark:text-slate-400'}`}
             type="button"
           >
             Satellite
           </button>
         </div>
+      </div>
 
-        <div className="rounded-2xl bg-slate-900/90 text-white px-4 py-3 backdrop-blur border border-white/10 shadow-lg max-w-xs">
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-white/50">Live route</p>
-              <p className="text-sm font-semibold leading-tight">{line.name}</p>
-            </div>
-            <span className={`w-2.5 h-2.5 rounded-full ${overallHealth > 70 ? 'bg-emerald-400' : overallHealth > 40 ? 'bg-amber-400' : 'bg-red-400'}`} />
+      {/* Live status card — top right */}
+      <div className="absolute top-3 right-3 z-20">
+        <div className="rounded-2xl bg-slate-900/92 text-white px-4 py-3 backdrop-blur border border-white/10 shadow-lg min-w-[150px]">
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              style={{
+                width: 10, height: 10, borderRadius: '50%', background: healthColor,
+                boxShadow: `0 0 6px ${healthColor}`, animation: 'lp 1.4s infinite', display: 'inline-block', flexShrink: 0,
+              }}
+            />
+            <p className="text-xs font-semibold leading-tight truncate max-w-[110px]">{line.name}</p>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
-            <div className="rounded-xl bg-white/5 py-2">
+          <div className="grid grid-cols-2 gap-2 text-center text-[11px]">
+            <div className="rounded-lg bg-white/5 py-1.5">
               <div className="text-white/50">Stations</div>
-              <div className="font-semibold">{coords.length}</div>
+              <div className="font-bold">{coords.length}</div>
             </div>
-            <div className="rounded-xl bg-white/5 py-2">
+            <div className="rounded-lg bg-white/5 py-1.5">
               <div className="text-white/50">Trains</div>
-              <div className="font-semibold">{trains.length}</div>
-            </div>
-            <div className="rounded-xl bg-white/5 py-2">
-              <div className="text-white/50">Health</div>
-              <div className="font-semibold">{overallHealth}%</div>
+              <div className="font-bold">{trains.length}</div>
             </div>
           </div>
-          {selectedStation && <div className="mt-2 text-xs text-white/80">Selected: {selectedStation}</div>}
-          {activeTrain && activeTrainPosition && (
-            <div className="mt-2 text-xs text-white/80 border-t border-white/10 pt-2">
-              <div className="font-semibold text-white">{activeTrain.id}</div>
-              <div>{activeTrain.status.toUpperCase()} · {activeTrain.capacity.current}/{activeTrain.capacity.total}</div>
+          {(fromStation && toStation) && (
+            <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
+              <div className="flex items-center gap-1.5 text-[10px] text-white/70">
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', display: 'inline-block', flexShrink: 0 }} />
+                <span className="truncate">{fromStation}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-white/70">
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block', flexShrink: 0 }} />
+                <span className="truncate">{toStation}</span>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Train detail slide-up panel */}
+      {activePanel && (
+        <div
+          className="absolute bottom-0 left-0 right-0 z-30 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 shadow-2xl"
+          style={{ borderRadius: '20px 20px 0 0', padding: '16px 20px 20px' }}
+        >
+          {/* Handle bar */}
+          <div className="w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-4" />
+
+          {/* Header */}
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{line.name.includes('Metro') ? '🚇' : '🚂'}</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{activePanel.train.id}</h3>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  activePanel.train.status === 'on-time'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                    : activePanel.train.status === 'delayed'
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                }`}>
+                  {activePanel.train.status === 'on-time' ? '✓ On Time' : activePanel.train.status === 'delayed' ? '⚠ Delayed' : '✗ Cancelled'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Train #{activePanel.train.trainNumber}
+              </p>
+            </div>
+            <button
+              onClick={() => setActivePanel(null)}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-2xl leading-none font-light"
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Route info */}
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-2.5 mb-3">
+            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-800" />
+              <div className="w-0.5 h-4 bg-slate-300 dark:bg-slate-600" />
+              <div className="w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white dark:border-slate-800" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-500 dark:text-slate-400">At Station</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{activePanel.currentStation}</p>
+              <p className="text-xs text-slate-400 mt-1">Next Stop</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{activePanel.nextStation}</p>
+            </div>
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3 text-center">
+              <p className="text-xs text-slate-400 mb-1">Health</p>
+              <p className={`text-lg font-bold ${
+                activePanel.train.health.overall > 70 ? 'text-emerald-600' : activePanel.train.health.overall > 40 ? 'text-amber-600' : 'text-red-600'
+              }`}>
+                {activePanel.train.health.overall}%
+              </p>
+            </div>
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3 text-center">
+              <p className="text-xs text-slate-400 mb-1">Capacity</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">{activePanel.train.capacity.percentage}%</p>
+              <p className="text-[10px] text-slate-400">{activePanel.train.capacity.current}/{activePanel.train.capacity.total}</p>
+            </div>
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3 text-center">
+              <p className="text-xs text-slate-400 mb-1">Status</p>
+              <p className={`text-sm font-bold ${
+                activePanel.train.status === 'on-time' ? 'text-emerald-600' :
+                activePanel.train.status === 'delayed' ? 'text-amber-600' : 'text-red-600'
+              }`}>
+                {activePanel.train.status === 'on-time' ? 'On Time' :
+                 activePanel.train.status === 'delayed' ? 'Delayed' : 'Cancelled'}
+              </p>
+            </div>
+          </div>
+
+          {/* Status warnings */}
+          {activePanel.train.status === 'delayed' && (
+            <div className="mt-3 flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
+              <span className="text-amber-500">⚠</span>
+              <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                This train is currently running behind schedule
+              </p>
+            </div>
+          )}
+          {activePanel.train.status === 'cancelled' && (
+            <div className="mt-3 flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-3 py-2">
+              <span className="text-red-500">🛑</span>
+              <p className="text-xs text-red-700 dark:text-red-400 font-medium">
+                This train service has been cancelled
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
-

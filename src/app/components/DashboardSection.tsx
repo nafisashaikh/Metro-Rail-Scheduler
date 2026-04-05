@@ -76,11 +76,12 @@ const STAFF_TABS = [
   { id: 'medical', label: 'Medical Guide', icon: Stethoscope },
 ] as const;
 
-// Passenger tabs (read-only, public-safe)
+// Passenger tabs — full feature set including Medical
 const PASSENGER_TABS = [
   { id: 'journey', label: 'Journey Planner', icon: MapPin },
   { id: 'map', label: 'Live Map', icon: Map },
   { id: 'alerts', label: 'Announcements', icon: Bell },
+  { id: 'medical', label: 'Medical Guide', icon: Stethoscope },
 ] as const;
 
 type StaffTabId = (typeof STAFF_TABS)[number]['id'];
@@ -138,7 +139,6 @@ export function DashboardSection({
     setSelectedStation(null);
   };
 
-  // Stats
   const onTimeCount = trains.filter((t) => t.status === 'on-time').length;
   const delayedCount = trains.filter((t) => t.status === 'delayed').length;
   const avgHealth =
@@ -151,7 +151,6 @@ export function DashboardSection({
       : 0;
   const sectionAlerts = alerts.filter((a) => a.section === section && !a.resolved);
 
-  // Analytics data
   const hourlyPassengers = Array.from({ length: 12 }, (_, i) => ({
     hour: `${i + 6}:00`,
     passengers: Math.round(2000 + Math.sin((i - 2) * 0.8) * 1500 + Math.random() * 300),
@@ -162,11 +161,198 @@ export function DashboardSection({
     onTime: Math.round(80 + Math.random() * 15),
   }));
 
+  // ── Tab bar (shared) ─────────────────────────────────────────────────────────
+  const TabBar = (
+    <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-x-auto scrollbar-hide w-full">
+      {TAB_LIST.map((tab) => {
+        const Icon = tab.icon;
+        const isBadge = tab.id === 'alerts' && sectionAlerts.length > 0;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setActiveTab(tab.id);
+              if (tab.id !== 'alerts') onCloseAlerts();
+            }}
+            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm transition-all flex-shrink-0 ${
+              activeTab === tab.id
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+            style={{ fontWeight: activeTab === tab.id ? 600 : 400 }}
+          >
+            <Icon className="w-4 h-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">{tab.label}</span>
+            {isBadge && (
+              <span
+                className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center"
+                style={{ fontWeight: 700 }}
+              >
+                {sectionAlerts.length}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // PASSENGER LAYOUT — full-width, no sidebar, mobile-first
+  // ══════════════════════════════════════════════════════════════════════════════
+  if (isPassenger) {
+    return (
+      <div className="flex flex-col gap-4">
+        {/* Tab bar */}
+        {TabBar}
+
+        {/* Journey Planner */}
+        {activeTab === 'journey' && (
+          <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6">
+            <PassengerJourneyPlanner
+              lines={lines}
+              section={section}
+              onTrainSelect={(train, source) => {
+                setActiveTrain(train);
+                setActiveTab('map');
+                if (source) setSelectedStation(source);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Live Map — full width, tall */}
+        {activeTab === 'map' && (
+          <div className="flex flex-col gap-3">
+            {/* Line + station pickers in a compact row */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-3">
+                <MetroLineSelector
+                  lines={lines}
+                  selectedLine={selectedLine}
+                  onSelectLine={handleLineSelect}
+                />
+              </div>
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-3">
+                <StationSelector
+                  stations={selectedLine?.stations || []}
+                  selectedStation={selectedStation}
+                  onSelectStation={setSelectedStation}
+                  disabled={!selectedLine}
+                />
+                {selectedLine && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    {selectedLine.stations.length} stations
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Train details banner when active train selected */}
+            {activeTrain && (
+              <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-4 py-3 flex items-center gap-3">
+                <TrainIcon className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 truncate">
+                    {activeTrain.id}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    {activeTrain.status.toUpperCase()} · Health {activeTrain.health.overall}% · {activeTrain.capacity.current}/{activeTrain.capacity.total} seats
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTrain(null)}
+                  className="text-blue-400 hover:text-blue-600 text-lg leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            {/* Map — tall on mobile */}
+            <div
+              className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+              style={{ height: 'min(70vh, 580px)' }}
+            >
+              {selectedLine ? (
+                <SatelliteMap
+                  line={selectedLine}
+                  selectedStation={selectedStation || undefined}
+                  trains={trains}
+                  onTrainSelect={(train, position) => {
+                    setActiveTrain(train);
+                    setActiveTrainPosition(position);
+                  }}
+                />
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800 gap-3 text-slate-400">
+                  <Map className="w-16 h-16 opacity-20" />
+                  <p className="text-sm">Select a line above to view live map</p>
+                </div>
+              )}
+            </div>
+
+            {/* Quick stats strip */}
+            {trains.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: 'Trains', value: trains.length, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+                  { label: 'On Time', value: onTimeCount, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+                  { label: 'Delayed', value: delayedCount, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+                  { label: 'Avg Health', value: `${avgHealth}%`, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+                ].map((s) => (
+                  <div key={s.label} className={`rounded-xl p-3 text-center ${s.bg}`}>
+                    <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Announcements */}
+        {activeTab === 'alerts' && (
+          <div
+            className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6"
+            style={{ minHeight: 400 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+              <h3 className="text-slate-900 dark:text-white font-semibold">
+                {section === 'metro' ? 'Metro' : 'Railway'} Announcements
+              </h3>
+            </div>
+            <AlertPanel
+              alerts={alerts.filter((a) => a.section === section)}
+              onResolve={() => {}}
+              onAdd={() => {}}
+              userRole={userRole}
+              section={section}
+            />
+          </div>
+        )}
+
+        {/* Medical Guide — available for passengers too */}
+        {activeTab === 'medical' && (
+          <div
+            className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6"
+            style={{ minHeight: 480 }}
+          >
+            <MedicalPrescription selectedStation={selectedStation} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // STAFF LAYOUT — sidebar + main content (desktop-first, responsive)
+  // ══════════════════════════════════════════════════════════════════════════════
   return (
-    <div className="flex gap-6 min-h-0">
-      {/* Left sidebar - Made sticky and independently scrollable to prevent massive empty white space on the right */}
-      <div className="w-72 flex-shrink-0 flex flex-col gap-4 sticky top-[80px] self-start max-h-[calc(100vh-100px)] overflow-y-auto pb-8 scrollbar-hide">
-        {/* Line selector */}
+    <div className="flex flex-col lg:flex-row gap-6 min-h-0">
+      {/* Left sidebar */}
+      <div className="w-full lg:w-72 flex-shrink-0 flex flex-col gap-4 lg:sticky lg:top-[80px] lg:self-start lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto lg:pb-8 scrollbar-hide">
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4">
           <MetroLineSelector
             lines={lines}
@@ -174,8 +360,6 @@ export function DashboardSection({
             onSelectLine={handleLineSelect}
           />
         </div>
-
-        {/* Station selector */}
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4">
           <StationSelector
             stations={selectedLine?.stations || []}
@@ -190,56 +374,23 @@ export function DashboardSection({
           )}
         </div>
 
-        {/* Quick stats */}
         {selectedStation && trains.length > 0 && (
           <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4">
-            <p
-              className="text-xs text-slate-500 dark:text-slate-400 mb-3"
-              style={{ fontWeight: 600 }}
-            >
-              QUICK STATS
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 font-semibold uppercase tracking-wide">
+              Quick Stats
             </p>
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                {
-                  label: 'Total Trains',
-                  value: trains.length,
-                  icon: TrainIcon,
-                  color: 'text-blue-500',
-                  bg: 'bg-blue-50 dark:bg-blue-900/20',
-                },
-                {
-                  label: 'On Time',
-                  value: onTimeCount,
-                  icon: Clock,
-                  color: 'text-emerald-500',
-                  bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-                },
-                {
-                  label: 'Delayed',
-                  value: delayedCount,
-                  icon: AlertTriangle,
-                  color: 'text-amber-500',
-                  bg: 'bg-amber-50 dark:bg-amber-900/20',
-                },
-                {
-                  label: 'Avg Health',
-                  value: `${avgHealth}%`,
-                  icon: Activity,
-                  color: 'text-purple-500',
-                  bg: 'bg-purple-50 dark:bg-purple-900/20',
-                },
+                { label: 'Total Trains', value: trains.length, icon: TrainIcon, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+                { label: 'On Time', value: onTimeCount, icon: Clock, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+                { label: 'Delayed', value: delayedCount, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+                { label: 'Avg Health', value: `${avgHealth}%`, icon: Activity, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
               ].map((stat) => {
                 const Icon = stat.icon;
                 return (
                   <div key={stat.label} className={`rounded-lg p-3 ${stat.bg}`}>
                     <Icon className={`w-4 h-4 ${stat.color} mb-1`} />
-                    <p
-                      className="text-lg text-slate-900 dark:text-white"
-                      style={{ fontWeight: 700 }}
-                    >
-                      {stat.value}
-                    </p>
+                    <p className="text-lg text-slate-900 dark:text-white font-bold">{stat.value}</p>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400">{stat.label}</p>
                   </div>
                 );
@@ -248,12 +399,11 @@ export function DashboardSection({
           </div>
         )}
 
-        {/* Alerts mini panel */}
         {sectionAlerts.length > 0 && (
           <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
             <div className="flex items-center gap-2 mb-2">
               <Bell className="w-4 h-4 text-red-500" />
-              <span className="text-sm text-red-700 dark:text-red-300" style={{ fontWeight: 600 }}>
+              <span className="text-sm text-red-700 dark:text-red-300 font-semibold">
                 {sectionAlerts.length} Active Alert{sectionAlerts.length > 1 ? 's' : ''}
               </span>
             </div>
@@ -264,15 +414,13 @@ export function DashboardSection({
             ))}
             <button
               onClick={() => setActiveTab('alerts')}
-              className="mt-2 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 hover:text-red-700 dark:hover:text-red-300"
-              style={{ fontWeight: 600 }}
+              className="mt-2 text-xs text-red-600 dark:text-red-400 flex items-center gap-1 hover:text-red-700 font-semibold"
             >
               View all alerts <ChevronRight className="w-3 h-3" />
             </button>
           </div>
         )}
 
-        {/* Route diagram (collapsed state) */}
         {selectedLine && (
           <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 overflow-hidden">
             <RouteMapVisualization
@@ -282,87 +430,30 @@ export function DashboardSection({
           </div>
         )}
 
-        {/* Weather */}
         <WeatherWidget weather={weather} />
       </div>
 
       {/* Main content */}
       <div className="flex-1 min-w-0 flex flex-col gap-4">
         {/* Tab bar */}
-        <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 w-fit">
-          {TAB_LIST.map((tab) => {
-            const Icon = tab.icon;
-            const isBadge = tab.id === 'alerts' && sectionAlerts.length > 0;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  if (tab.id !== 'alerts') onCloseAlerts();
-                }}
-                className={`relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                }`}
-                style={{ fontWeight: activeTab === tab.id ? 600 : 400 }}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-                {isBadge && (
-                  <span
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center"
-                    style={{ fontWeight: 700 }}
-                  >
-                    {sectionAlerts.length}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        {TabBar}
 
-        {/* Tab content */}
         {activeTrain && activeTrainPosition && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 p-3 mb-3">
-            <p className="text-xs text-slate-500 dark:text-slate-400" style={{ fontWeight: 600 }}>
-              Active train selected: {activeTrain.id} at ({activeTrainPosition[0].toFixed(3)}, {activeTrainPosition[1].toFixed(3)})
-            </p>
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              Status: {activeTrain.status}, Health: {activeTrain.health.overall}%
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 p-3 mb-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+              Active train: {activeTrain.id} · Status: {activeTrain.status} · Health: {activeTrain.health.overall}%
             </p>
           </div>
         )}
+
         <div className="flex-1 min-h-[500px]">
-          {/* ── Journey Planner (passenger only) ── */}
-          {activeTab === 'journey' && (
-            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-6 min-h-96">
-              <PassengerJourneyPlanner
-                lines={lines}
-                section={section}
-                onTrainSelect={(train, source) => {
-                  setActiveTrain(train);
-                  setActiveTab('map');
-                  if (source) setSelectedStation(source);
-                }}
-              />
-            </div>
-          )}
-          {/* ── Schedule ── */}
           {activeTab === 'schedule' && (
-            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-6 min-h-96">
+            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6 min-h-96">
               {!selectedStation ? (
-                <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
+                <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                   <Calendar className="w-16 h-16 mb-4 opacity-30" />
-                  <p
-                    className="text-lg mb-1 text-slate-500 dark:text-slate-400"
-                    style={{ fontWeight: 500 }}
-                  >
-                    Select a station
-                  </p>
-                  <p className="text-sm">
-                    Choose a line and station from the sidebar to view live schedules
-                  </p>
+                  <p className="text-lg mb-1 text-slate-500 font-medium">Select a station</p>
+                  <p className="text-sm">Choose a line and station from the sidebar</p>
                 </div>
               ) : (
                 <ScheduleDisplay
@@ -374,11 +465,10 @@ export function DashboardSection({
             </div>
           )}
 
-          {/* ── Satellite Map ── */}
           {activeTab === 'map' && (
             <div
               className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
-              style={{ height: 520 }}
+              style={{ height: 'min(70vh, 600px)' }}
             >
               {selectedLine ? (
                 <SatelliteMap
@@ -388,9 +478,6 @@ export function DashboardSection({
                   onTrainSelect={(train, position) => {
                     setActiveTrain(train);
                     setActiveTrainPosition(position);
-                    setActiveTab('map');
-                    // Keep selected station as-is when picking a train marker.
-                    setSelectedStation(selectedStation);
                   }}
                 />
               ) : (
@@ -404,7 +491,6 @@ export function DashboardSection({
             </div>
           )}
 
-          {/* ── Train Health ── */}
           {activeTab === 'health' && (
             <div className="space-y-4">
               {!selectedStation ? (
@@ -423,7 +509,7 @@ export function DashboardSection({
                   ))}
                   {trains.length === 0 && (
                     <div className="col-span-2 rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-12 text-center text-slate-400">
-                      <p className="text-sm">No trains available for health monitoring</p>
+                      <p className="text-sm">No trains available</p>
                     </div>
                   )}
                 </div>
@@ -431,165 +517,64 @@ export function DashboardSection({
             </div>
           )}
 
-          {/* ── Analytics ── */}
           {activeTab === 'analytics' && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {metrics && <StationEfficiencyCard metrics={metrics} />}
                 {trains.length > 0 && <CapacityVisualization capacity={trains[0].capacity} />}
               </div>
-
-              {/* Hourly passengers chart */}
               <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="w-4 h-4 text-blue-500" />
-                  <p
-                    className="text-sm text-slate-700 dark:text-slate-200"
-                    style={{ fontWeight: 600 }}
-                  >
-                    Hourly Passenger Flow
-                  </p>
+                  <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Hourly Passenger Flow</p>
                 </div>
                 <ResponsiveContainer width="100%" height={200}>
-                  <BarChart
-                    data={hourlyPassengers}
-                    margin={{ top: 5, right: 10, bottom: 5, left: 0 }}
-                  >
+                  <BarChart data={hourlyPassengers} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#f0f0f0'} />
-                    <XAxis
-                      dataKey="hour"
-                      tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }}
-                    />
+                    <XAxis dataKey="hour" tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} />
                     <YAxis tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} />
-                    <Tooltip
-                      contentStyle={{
-                        background: isDark ? '#1e293b' : '#fff',
-                        border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: isDark ? '#f1f5f9' : '#1e293b',
-                      }}
-                    />
+                    <Tooltip contentStyle={{ background: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, borderRadius: 8, fontSize: 12, color: isDark ? '#f1f5f9' : '#1e293b' }} />
                     <Bar dataKey="passengers" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-
-              {/* Health trend */}
               <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  <p
-                    className="text-sm text-slate-700 dark:text-slate-200"
-                    style={{ fontWeight: 600 }}
-                  >
-                    Weekly Performance Trend
-                  </p>
+                  <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Weekly Performance Trend</p>
                 </div>
                 <ResponsiveContainer width="100%" height={180}>
                   <LineChart data={healthTrend} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#f0f0f0'} />
-                    <XAxis
-                      dataKey="day"
-                      tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }}
-                      domain={[60, 100]}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: isDark ? '#1e293b' : '#fff',
-                        border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: isDark ? '#f1f5f9' : '#1e293b',
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="health"
-                      stroke="#8b5cf6"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      name="Avg Health"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="onTime"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      name="On-Time %"
-                    />
+                    <XAxis dataKey="day" tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} />
+                    <YAxis tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} domain={[60, 100]} />
+                    <Tooltip contentStyle={{ background: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, borderRadius: 8, fontSize: 12, color: isDark ? '#f1f5f9' : '#1e293b' }} />
+                    <Line type="monotone" dataKey="health" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} name="Avg Health" />
+                    <Line type="monotone" dataKey="onTime" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="On-Time %" />
                   </LineChart>
                 </ResponsiveContainer>
                 <div className="flex gap-4 mt-2">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-0.5 bg-purple-500" />
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Avg Health %</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-0.5 bg-emerald-500" />
-                    <span className="text-xs text-slate-500 dark:text-slate-400">On-Time %</span>
-                  </div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 bg-purple-500" /><span className="text-xs text-slate-500">Avg Health %</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 bg-emerald-500" /><span className="text-xs text-slate-500">On-Time %</span></div>
                 </div>
               </div>
-
-              {/* Capacity donut */}
               {trains.length > 0 && (
                 <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <Zap className="w-4 h-4 text-amber-500" />
-                    <p
-                      className="text-sm text-slate-700 dark:text-slate-200"
-                      style={{ fontWeight: 600 }}
-                    >
-                      Average Capacity Distribution
-                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Average Capacity</p>
                   </div>
                   <div className="flex items-center gap-6">
                     <ResponsiveContainer width={140} height={140}>
                       <PieChart>
-                        <Pie
-                          data={[
-                            { name: 'Occupied', value: avgCapacity },
-                            { name: 'Available', value: 100 - avgCapacity },
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={45}
-                          outerRadius={65}
-                          dataKey="value"
-                          startAngle={90}
-                          endAngle={-270}
-                        >
-                          {CAPACITY_PIE_COLORS.map((c, i) => (
-                            <Cell key={i} fill={c} />
-                          ))}
+                        <Pie data={[{ name: 'Occupied', value: avgCapacity }, { name: 'Available', value: 100 - avgCapacity }]} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" startAngle={90} endAngle={-270}>
+                          {CAPACITY_PIE_COLORS.map((c, i) => <Cell key={i} fill={c} />)}
                         </Pie>
                       </PieChart>
                     </ResponsiveContainer>
                     <div>
-                      <p
-                        className="text-3xl text-slate-900 dark:text-white"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {avgCapacity}%
-                      </p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Average load across all trains
-                      </p>
-                      <div className="mt-3 space-y-1">
-                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                          <div className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
-                          <span>Occupied — {avgCapacity}%</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                          <div className="w-2.5 h-2.5 rounded-sm bg-slate-200 dark:bg-slate-600" />
-                          <span>Available — {100 - avgCapacity}%</span>
-                        </div>
-                      </div>
+                      <p className="text-3xl text-slate-900 dark:text-white font-bold">{avgCapacity}%</p>
+                      <p className="text-sm text-slate-500">Average load across all trains</p>
                     </div>
                   </div>
                 </div>
@@ -597,15 +582,11 @@ export function DashboardSection({
             </div>
           )}
 
-          {/* ── Alerts ── */}
           {activeTab === 'alerts' && (
-            <div
-              className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-6"
-              style={{ minHeight: 480 }}
-            >
+            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6" style={{ minHeight: 480 }}>
               <div className="flex items-center gap-2 mb-4">
                 <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                <h3 className="text-slate-900 dark:text-white" style={{ fontWeight: 600 }}>
+                <h3 className="text-slate-900 dark:text-white font-semibold">
                   {section === 'metro' ? 'Metro' : 'Railway'} Alert System
                 </h3>
               </div>
@@ -619,12 +600,8 @@ export function DashboardSection({
             </div>
           )}
 
-          {/* ── Medical Guide ── */}
-          {!isPassenger && activeTab === 'medical' && (
-            <div
-              className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-6"
-              style={{ minHeight: 480 }}
-            >
+          {activeTab === 'medical' && (
+            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6" style={{ minHeight: 480 }}>
               <MedicalPrescription selectedStation={selectedStation} />
             </div>
           )}
