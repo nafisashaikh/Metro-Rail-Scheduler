@@ -10,10 +10,13 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.2",
     "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.20.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

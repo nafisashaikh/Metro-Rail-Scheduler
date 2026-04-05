@@ -81,7 +81,6 @@ const PASSENGER_TABS = [
   { id: 'journey', label: 'Journey Planner', icon: MapPin },
   { id: 'map', label: 'Live Map', icon: Map },
   { id: 'alerts', label: 'Announcements', icon: Bell },
-  { id: 'medical', label: 'Medical Guide', icon: Stethoscope },
 ] as const;
 
 type StaffTabId = (typeof STAFF_TABS)[number]['id'];
@@ -621,7 +620,7 @@ export function DashboardSection({
           )}
 
           {/* ── Medical Guide ── */}
-          {activeTab === 'medical' && (
+          {!isPassenger && activeTab === 'medical' && (
             <div
               className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-6"
               style={{ minHeight: 480 }}

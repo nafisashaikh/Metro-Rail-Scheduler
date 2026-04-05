@@ -192,7 +192,6 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
         interactive: true,
       }).addTo(map);
 
-      marker.bindPopup(`<strong>${coords[idx]?.name || `Station ${idx + 1}`}</strong>`);
       marker.on('click', () => {
         setFullIndiaView(false);
         if (map) {
@@ -247,7 +246,7 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
       let marker = markersRef.current.get(trainKey);
       
       if (marker) {
-        // Update existing marker position
+        // Update existing marker position and popup
         marker.setLatLng([trainData.position[0], trainData.position[1]]);
       } else {
         // Create new marker
@@ -269,42 +268,10 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
           if (map) {
             map.setView(trainData.position, 12, { animate: true });
           }
-          marker.openPopup();
           if (onTrainSelect) {
             onTrainSelect(train, trainData.position);
           }
         });
-
-        const popupContent = `
-          <div style="font-size: 12px; min-width: 240px; font-family: sans-serif;">
-            <div style="margin-bottom: 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">
-              <strong style="font-size: 13px;">${icon} ${isMetro ? 'Metro' : 'Rail'} Train ${train.id}</strong>
-            </div>
-            <div style="margin-bottom: 6px;">
-              <strong style="color: ${healthColor};">● ${healthStatus}</strong><br/>
-              <span style="color: #666;">Health: ${Math.round(train.health.overall)}%</span>
-            </div>
-            <div style="background: #f3f4f6; padding: 6px; border-radius: 4px; margin-bottom: 6px;">
-              <strong>Status: Between Stations</strong><br/>
-              <span style="color: #0891b2; font-weight: bold; font-size: 13px;">
-                ${trainData.currentStation} → ${trainData.nextStation}
-              </span><br/>
-              <span style="color: #666; font-size: 11px;">Progress: ${trainData.progress}%</span>
-            </div>
-            <div style="border-top: 1px solid #e5e7eb; padding-top: 6px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-                <span>Capacity:</span>
-                <strong>${train.capacity.percentage}%</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span>Passengers:</span>
-                <strong>${train.capacity.current}/${train.capacity.total}</strong>
-              </div>
-            </div>
-          </div>
-        `;
-
-        marker.bindPopup(popupContent);
         marker.addTo(map);
         markersRef.current.set(trainKey, marker);
       }
@@ -344,120 +311,66 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
       <div ref={containerRef} className="h-full w-full" />
 
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
-        <div className="flex gap-2">
+        <div className="flex gap-2 rounded-full bg-white/90 dark:bg-slate-900/80 p-1 shadow-sm backdrop-blur border border-slate-200 dark:border-slate-700">
           <button
             onClick={() => setFullIndiaView(true)}
-            className={`rounded-md px-3 py-1 text-xs font-semibold shadow-sm border ${fullIndiaView ? 'bg-blue-600 text-white border-blue-700' : 'bg-white/90 text-slate-700 border-slate-200 dark:bg-slate-900/90 dark:text-slate-100 dark:border-slate-700'}`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${fullIndiaView ? 'bg-orange-600 text-white border-orange-600' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
             type="button"
           >
-            India View
+            India
           </button>
           <button
             onClick={() => setFullIndiaView(false)}
-            className={`rounded-md px-3 py-1 text-xs font-semibold shadow-sm border ${!fullIndiaView ? 'bg-blue-600 text-white border-blue-700' : 'bg-white/90 text-slate-700 border-slate-200 dark:bg-slate-900/90 dark:text-slate-100 dark:border-slate-700'}`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${!fullIndiaView ? 'bg-orange-600 text-white border-orange-600' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
             type="button"
           >
-            Line View
+            Line
           </button>
-        </div>
-        <div className="flex gap-2">
           <button
             onClick={() => setIsSatellite(false)}
-            className={`rounded-md px-3 py-1 text-xs font-semibold shadow-sm border ${!isSatellite ? 'bg-green-600 text-white border-green-700' : 'bg-white/90 text-slate-700 border-slate-200 dark:bg-slate-900/90 dark:text-slate-100 dark:border-slate-700'}`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${!isSatellite ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
             type="button"
           >
             Street
           </button>
           <button
             onClick={() => setIsSatellite(true)}
-            className={`rounded-md px-3 py-1 text-xs font-semibold shadow-sm border ${isSatellite ? 'bg-green-600 text-white border-green-700' : 'bg-white/90 text-slate-700 border-slate-200 dark:bg-slate-900/90 dark:text-slate-100 dark:border-slate-700'}`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${isSatellite ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white' : 'bg-transparent text-slate-600 dark:text-slate-300 border-transparent'}`}
             type="button"
           >
             Satellite
           </button>
         </div>
-      </div>
 
-      <div className="absolute top-3 left-3 z-30 rounded-md bg-green-100/95 border border-green-300 px-3 py-2 text-xs text-green-800 dark:bg-green-900/80 dark:text-green-200">
-        <div>✓ Free map: OpenStreetMap</div>
-        <div className="text-xs mt-1">Route verified via Google Maps</div>
-      </div>
-
-      <div className="absolute bottom-3 right-3 z-20 rounded-lg bg-white/90 dark:bg-slate-900/80 px-4 py-3 text-xs text-slate-700 dark:text-slate-100 backdrop-blur sm:max-w-sm border border-slate-200 dark:border-slate-700">
-        <div className="font-semibold text-sm mb-2 flex items-center gap-2">
-          <span>Route Status: {routeStatus}</span>
-          <span className={`w-2.5 h-2.5 rounded-full ${overallHealth > 70 ? 'bg-emerald-500' : overallHealth > 40 ? 'bg-amber-500' : 'bg-red-500'}`} />
-        </div>
-        <div className="space-y-1 border-t border-slate-200 dark:border-slate-700 pt-2">
-          <div className="flex justify-between">
-            <span>Overall Health:</span>
-            <span className="font-semibold">{overallHealth}%</span>
+        <div className="rounded-2xl bg-slate-900/90 text-white px-4 py-3 backdrop-blur border border-white/10 shadow-lg max-w-xs">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-white/50">Live route</p>
+              <p className="text-sm font-semibold leading-tight">{line.name}</p>
+            </div>
+            <span className={`w-2.5 h-2.5 rounded-full ${overallHealth > 70 ? 'bg-emerald-400' : overallHealth > 40 ? 'bg-amber-400' : 'bg-red-400'}`} />
           </div>
-          <div className="flex items-center justify-between text-xs">
-            <span>🟢 Healthy:</span>
-            <span>{healthyTrains}/{trains.length}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span>🟡 Warning:</span>
-            <span>{warningTrains}/{trains.length}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span>🔴 Critical:</span>
-            <span>{criticalTrains}/{trains.length}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute bottom-3 left-3 z-20 rounded-lg bg-white/90 dark:bg-slate-900/80 px-3 py-2 text-xs text-slate-700 dark:text-slate-100 backdrop-blur sm:max-w-xs">
-        <div className="font-medium text-sm mb-1">{line.name} ({isSatellite ? '🛰️ Satellite' : '🗺️ Street'} View)</div>
-        <div className="space-y-1">
-          <div>📍 {coords.length} stations</div>
-          <div>🚆 {trains.length} trains tracking</div>
-          {selectedStation && <div>✓ Selected: {selectedStation}</div>}
-          {fullIndiaView && <div>🌍 Showing full India view</div>}
-        </div>
-
-        {activeTrain && activeTrainPosition && (
-          <div className="mt-3 border-t border-slate-200 dark:border-slate-700 pt-2">
-            <div className="font-semibold text-xs mb-1">Active Train (Clicked)</div>
-            <div className="text-[11px] text-slate-600 dark:text-slate-300">
-              <div>
-                <strong>{activeTrain.id}</strong> — {activeTrain.status.toUpperCase()}
-              </div>
-              <div>Line: {activeTrain.line}</div>
-              <div>Location: {activeTrainPosition[0].toFixed(3)}, {activeTrainPosition[1].toFixed(3)}</div>
-              <div>Health: {activeTrain.health.overall}%</div>
-              <div>Capacity: {activeTrain.capacity.current}/{activeTrain.capacity.total}</div>
+          <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
+            <div className="rounded-xl bg-white/5 py-2">
+              <div className="text-white/50">Stations</div>
+              <div className="font-semibold">{coords.length}</div>
+            </div>
+            <div className="rounded-xl bg-white/5 py-2">
+              <div className="text-white/50">Trains</div>
+              <div className="font-semibold">{trains.length}</div>
+            </div>
+            <div className="rounded-xl bg-white/5 py-2">
+              <div className="text-white/50">Health</div>
+              <div className="font-semibold">{overallHealth}%</div>
             </div>
           </div>
-        )}
-
-        <div className="mt-3 border-t border-slate-200 dark:border-slate-700 pt-2 space-y-1">
-          <div className="font-semibold text-xs mb-2">Train Status Health:</div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>Healthy (&gt;70%)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-amber-500" />
-            <span>Warning (40-70%)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-500" />
-            <span>Critical (&lt;40%)</span>
-          </div>
-        </div>
-
-        <div className="mt-2 border-t border-slate-200 dark:border-slate-700 pt-2 space-y-1">
-          <div className="font-semibold text-xs mb-1">Train Type Icons:</div>
-          <div className="flex items-center gap-2">
-            <span>🚇</span>
-            <span>Metro/Local Train</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span>🚂</span>
-            <span>Railway/Express</span>
-          </div>
+          {selectedStation && <div className="mt-2 text-xs text-white/80">Selected: {selectedStation}</div>}
+          {activeTrain && activeTrainPosition && (
+            <div className="mt-2 text-xs text-white/80 border-t border-white/10 pt-2">
+              <div className="font-semibold text-white">{activeTrain.id}</div>
+              <div>{activeTrain.status.toUpperCase()} · {activeTrain.capacity.current}/{activeTrain.capacity.total}</div>
+            </div>
+          )}
         </div>
       </div>
     </div>

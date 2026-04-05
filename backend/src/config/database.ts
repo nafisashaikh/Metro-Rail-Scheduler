@@ -41,7 +41,7 @@ export async function initializeDatabase(): Promise<void> {
         country_code VARCHAR(10) DEFAULT NULL,
         email VARCHAR(255) DEFAULT NULL COMMENT 'Encrypted email address',
         name VARCHAR(255) NOT NULL COMMENT 'Encrypted name',
-        age INT DEFAULT NULL COMMENT 'Encrypted age',
+        age VARCHAR(255) DEFAULT NULL COMMENT 'Encrypted age',
         gender VARCHAR(50) DEFAULT NULL COMMENT 'Encrypted gender',
         otp_code VARCHAR(10) DEFAULT NULL,
         otp_expires DATETIME DEFAULT NULL,
@@ -54,6 +54,12 @@ export async function initializeDatabase(): Promise<void> {
         INDEX idx_otp_expires (otp_expires),
         INDEX idx_is_verified (is_verified)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
+    // Backward-compatible migration: older schema stored `age` as INT, which breaks encrypted writes.
+    await connection.query(`
+      ALTER TABLE users
+      MODIFY COLUMN age VARCHAR(255) DEFAULT NULL COMMENT 'Encrypted age'
     `);
 
     // Create OTP attempts tracking table for rate limiting

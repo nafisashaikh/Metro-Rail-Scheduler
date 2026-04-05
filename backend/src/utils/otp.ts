@@ -169,19 +169,6 @@ export async function sendOTP(
   otp: string,
   type: 'mobile' | 'email'
 ): Promise<{ success: boolean; message: string }> {
-  // TODO: Integrate with actual SMS/Email service (Twilio, SendGrid, etc.)
-  console.log(`📱 [${type.toUpperCase()}] Sending OTP to ${identifier}: ${otp}`);
-  
-  // For development/testing, just log the OTP
-  // In production, replace with actual API calls
-  
-  if (type === 'mobile') {
-    // Example: await twilioClient.messages.create({ to: identifier, body: `Your OTP is: ${otp}` });
-    console.log(`SMS would be sent to: ${identifier} with OTP: ${otp}`);
-  } else {
-    // Example: await sendgridClient.send({ to: identifier, subject: 'Your OTP', text: `Your OTP is: ${otp}` });
-    console.log(`Email would be sent to: ${identifier} with OTP: ${otp}`);
-  }
-  
-  return { success: true, message: 'OTP sent successfully (development mode)' };
+  console.log(`📨 [${type.toUpperCase()} DEV OTP] ${identifier}: ${otp}`);
+  return { success: true, message: 'OTP generated in development mode.' };
 }

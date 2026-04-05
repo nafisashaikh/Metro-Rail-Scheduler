@@ -78,5 +78,15 @@
     "identifier": "persist75743@gmail.com",
     "passwordSaltHex": "6f4748dff384aaf021ef330a5835e82a",
     "passwordHashHex": "86ee953224b6d1bee98df7fa08596bc450e9d785992192b5c4e8c6e662a89acf24eebe9d2560cd6d9a39e6412aad5b0a4c657bea15ebff3a4f24beed3d5b8338"
+  },
+  {
+    "id": "p006",
+    "name": "Nafis Shaikh",
+    "role": "passenger",
+    "username": "nafisabidshaikh12@gmail.com",
+    "cardNumber": "MPC-7006",
+    "identifier": "nafisabidshaikh12@gmail.com",
+    "passwordSaltHex": "8643933b4b7e425561665f97455c618d",
+    "passwordHashHex": "7f27001ba70b38c695e394f1ac1696c9c3d7ef6af77251f84edfcdab07b9c5617f7a695545dd16fa0f9fd857d7e761d75709f418c98f0bed77b104c7fd39ab76"
   }
 ]

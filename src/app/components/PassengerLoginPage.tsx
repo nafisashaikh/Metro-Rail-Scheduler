@@ -1,14 +1,13 @@
 import { useState, useCallback } from 'react';
 import type { PassengerUser } from '../types/metro';
 import { User, Lock, Eye, EyeOff, ArrowLeft, Train, Shield } from 'lucide-react';
+import { apiUrl } from '../config/api';
 
 interface PassengerLoginPageProps {
   onLogin: (payload: { user: PassengerUser; token: string }) => void;
   onBack: () => void;
   onSwitchToSignup: () => void;
 }
-
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:4000`;
 
 const DEMO_CREDS = [
   { username: 'user001', password: 'pass123', label: 'Regular Commuter' },
@@ -28,7 +27,7 @@ export function PassengerLoginPage({ onLogin, onBack, onSwitchToSignup }: Passen
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetch(apiUrl('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

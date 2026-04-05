@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import type { PassengerUser } from '../types/metro';
 import { ArrowLeft, User, Lock, Eye, EyeOff, UserPlus, Train } from 'lucide-react';
+import { apiUrl } from '../config/api';
 
 interface PassengerSignupPageProps {
   onSignupSuccess: (payload: { user: PassengerUser; token: string }) => void;
   onBack: () => void;
   onSwitchToLogin: () => void;
 }
-
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:4000`;
 
 export function PassengerSignupPage({
   onSignupSuccess,
@@ -43,7 +42,7 @@ export function PassengerSignupPage({
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/signup/passenger`, {
+      const response = await fetch(apiUrl('/auth/signup/passenger'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

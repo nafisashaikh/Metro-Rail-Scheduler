@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { User } from '../types/metro';
 import { Train, Shield, Eye, EyeOff, Lock, LogIn, ArrowLeft } from 'lucide-react';
+import { apiUrl } from '../config/api';
 
 type StaffRole = 'admin' | 'supervisor' | 'employee';
 
@@ -8,8 +9,6 @@ interface LoginPageProps {
   onLogin: (payload: { user: User; token: string }) => void;
   onBack?: () => void;
 }
-
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:4000`;
 
 const DEMO_USERS: { role: StaffRole; user: User; password: string }[] = [
   {
@@ -70,7 +69,7 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetch(apiUrl('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
