@@ -22,7 +22,7 @@ import {
   DashboardSection,
   AnnouncementTicker,
 } from './components';
-import { UserRegistrationFlow } from './components/auth';
+import { PassengerSignupPage } from './components/PassengerSignupPage';
 import { apiUrl } from './config/api';
 
 // ─── Portal type ──────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ export default function App() {
   // ── Passenger state ───────────────────────────────────────────────────────
   const [passengerUser, setPassengerUser] = useState<PassengerUser | null>(null);
   const [passengerSection, setPassengerSection] = useState<SystemSection>('metro');
-  const [passengerAuthMode, setPassengerAuthMode] = useState<'login' | 'signup-otp'>('login');
+  const [passengerAuthMode, setPassengerAuthMode] = useState<'login' | 'signup'>('login');
 
   // ── Shared state ──────────────────────────────────────────────────────────
   const [alerts, setAlerts] = useState<Alert[]>(seedAlerts);
@@ -182,55 +182,11 @@ export default function App() {
     setPortal('selector');
   }, []);
 
-  const handlePassengerOtpRegistrationComplete = useCallback(async (token: string) => {
-    localStorage.setItem(AUTH_TOKEN_KEY, token);
+  const handlePassengerSignupSuccess = useCallback((payload: { user: PassengerUser; token: string }) => {
+    setPassengerUser(payload.user);
+    setPortal('passenger');
+    localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
     localStorage.setItem(AUTH_PORTAL_KEY, 'passenger');
-
-    try {
-      const response = await fetch(apiUrl('/users/profile'), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error('Unable to fetch profile after registration.');
-      }
-
-      const data = (await response.json()) as {
-        user?: {
-          id: string;
-          name?: string;
-          email?: string;
-          mobile?: string;
-          countryCode?: string;
-          cardNumber?: string;
-        };
-      };
-
-      const profile = data.user;
-      if (!profile?.id) {
-        throw new Error('Profile response missing user details.');
-      }
-
-      setPassengerUser({
-        id: profile.id,
-        name: profile.name?.trim() || 'Passenger User',
-        username:
-          profile.email?.trim() ||
-          `${profile.countryCode ?? ''}${profile.mobile ?? ''}` ||
-          `passenger-${profile.id.slice(0, 6)}`,
-        cardNumber: profile.cardNumber,
-        role: 'passenger',
-      });
-      setPassengerAuthMode('login');
-    } catch {
-      setPassengerUser({
-        id: `temp-${Date.now()}`,
-        name: 'Passenger User',
-        username: 'new-passenger',
-        role: 'passenger',
-      });
-      setPassengerAuthMode('login');
-    }
   }, []);
 
   const handleSwitchPortal = useCallback(() => {
@@ -409,21 +365,14 @@ export default function App() {
             <PassengerLoginPage
               onLogin={handlePassengerLogin}
               onBack={() => setPortal('selector')}
-              onSwitchToSignup={() => setPassengerAuthMode('signup-otp')}
+              onSwitchToSignup={() => setPassengerAuthMode('signup')}
             />
           ) : (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800 py-6 px-4">
-              <div className="max-w-4xl mx-auto">
-                <button
-                  type="button"
-                  onClick={() => setPassengerAuthMode('login')}
-                  className="mb-4 text-sm text-slate-600 dark:text-slate-300 hover:underline"
-                >
-                  ← Back to Passenger Login
-                </button>
-                <UserRegistrationFlow onComplete={handlePassengerOtpRegistrationComplete} />
-              </div>
-            </div>
+            <PassengerSignupPage
+              onSignupSuccess={handlePassengerSignupSuccess}
+              onBack={() => setPortal('selector')}
+              onSwitchToLogin={() => setPassengerAuthMode('login')}
+            />
           )}
         </div>
       );

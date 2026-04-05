@@ -1,11 +1,9 @@
 import cors from 'cors';
 import express from 'express';
 import { env } from './config/env.js';
-import { testDatabaseConnection, initializeDatabase } from './config/database.js';
 import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
 import { schedulesRouter } from './routes/schedules.js';
-import { usersRouter } from './routes/users.js';
 import { rateLimiter, cleanupRateLimitStore } from './middleware/rateLimiter.js';
 import { sanitizeInput, enforceHTTPS, securityHeaders, requestLogger } from './middleware/security.js';
 
@@ -41,18 +39,7 @@ app.use(
 );
 app.use(express.json());
 
-// Initialize database on startup
-(async () => {
-  const connected = await testDatabaseConnection();
-  if (connected) {
-    await initializeDatabase();
-  } else {
-    console.warn('⚠️  Database not connected. User features will not work.');
-  }
-  
-  // Start rate limit cleanup
-  cleanupRateLimitStore();
-})();
+// Database removed - sticking to mock data for simplicity
 
 app.get('/', (_req, res) => {
   res.status(200).json({
@@ -63,10 +50,7 @@ app.get('/', (_req, res) => {
       '/auth/login', 
       '/auth/signup/passenger', 
       '/auth/me', 
-      '/schedules',
-      '/users/register',
-      '/users/verify-otp',
-      '/users/profile'
+      '/schedules'
     ],
   });
 });
@@ -74,14 +58,3 @@ app.get('/', (_req, res) => {
 app.use('/health', healthRouter);
 app.use('/auth', authRouter);
 app.use('/schedules', schedulesRouter);
-
-// Apply rate limiting to user endpoints
-app.use(
-  '/users',
-  rateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 10, // Max 10 requests per 15 minutes per IP
-    message: 'Too many requests from this IP. Please try again later.',
-  }),
-  usersRouter
-);

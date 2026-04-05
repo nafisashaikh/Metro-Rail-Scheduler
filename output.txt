@@ -1,0 +1,145 @@
+TABLES: [
+  { Tables_in_metro_rail_scheduler: 'otp_attempts' },
+  { Tables_in_metro_rail_scheduler: 'user_sessions' },
+  { Tables_in_metro_rail_scheduler: 'users' }
+]
+
+LATEST USERS: [
+  {
+    id: '48e750c0-4a1e-4c28-b80d-aca75e3eae0a',
+    login_type: 'mobile',
+    is_verified: 1,
+    created_at: 2026-04-04T16:19:25.000Z
+  },
+  {
+    id: '4ceaff22-7ae9-4f7d-8a96-99091f630078',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T16:12:28.000Z
+  },
+  {
+    id: 'a1f79da0-3653-447f-9b4d-ecb3a5931268',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T16:10:05.000Z
+  },
+  {
+    id: 'b99566fa-4e7a-4825-94ad-947bbc6edbd2',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T15:30:08.000Z
+  },
+  {
+    id: '993b31fe-2b18-44ab-903d-57def0f49bfc',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T15:26:41.000Z
+  },
+  {
+    id: '0186239a-75e4-42b7-abbf-9173962a57dd',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T15:21:42.000Z
+  },
+  {
+    id: 'f8f15849-d2ba-46b3-b308-61fd5ca3f5e8',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T15:20:28.000Z
+  },
+  {
+    id: '5044419a-0538-4674-994b-6ea9ece86153',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T15:19:29.000Z
+  },
+  {
+    id: '9939e39a-0104-4814-9783-287c23a27b21',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T15:19:00.000Z
+  },
+  {
+    id: '4388dff5-6c24-467b-922f-faeafccf84f9',
+    login_type: 'mobile',
+    is_verified: 0,
+    created_at: 2026-04-04T15:17:48.000Z
+  }
+]
+
+LATEST VERIFIED USER: [
+  {
+    id: '48e750c0-4a1e-4c28-b80d-aca75e3eae0a',
+    login_type: 'mobile',
+    is_verified: 1,
+    created_at: 2026-04-04T16:19:25.000Z
+  }
+]
+
+SESSIONS FOR LATEST VERIFIED USER: [
+  {
+    id: '105f8fd9-3042-11f1-9b7d-08bfb8d955c0',
+    user_id: '48e750c0-4a1e-4c28-b80d-aca75e3eae0a',
+    expires_at: 2026-04-05T00:19:32.000Z,
+    created_at: 2026-04-04T16:19:32.000Z
+  }
+]
+
+LATEST OTP ATTEMPTS: [
+  {
+    id: 8,
+    identifier: 'U2FsdGVkX193HtovAVo0UHRzNSfz8uZRWR3aiz0sasQ=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T16:19:25.000Z,
+    blocked_until: null
+  },
+  {
+    id: 7,
+    identifier: 'U2FsdGVkX1//kUREXlf6opHQAcH/o9loju1nywKETTk=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T15:30:08.000Z,
+    blocked_until: null
+  },
+  {
+    id: 6,
+    identifier: 'U2FsdGVkX1/TCkIV8inLQ1JAe5TWoG4wxAj7ZyfLyRg=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T15:26:41.000Z,
+    blocked_until: null
+  },
+  {
+    id: 5,
+    identifier: 'U2FsdGVkX18G0LWjlqxMhUktjU8xgtJa8XPMGJQW1Sw=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T15:21:42.000Z,
+    blocked_until: null
+  },
+  {
+    id: 4,
+    identifier: 'U2FsdGVkX18+r1tx/nMvGoZE0liFz+4kXHriD4BmSCo=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T15:20:28.000Z,
+    blocked_until: null
+  },
+  {
+    id: 3,
+    identifier: 'U2FsdGVkX1+09SWqVxRLNOctOiDun3EjBhMOZygRGBw=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T15:19:29.000Z,
+    blocked_until: null
+  },
+  {
+    id: 2,
+    identifier: 'U2FsdGVkX19+Vwix7yNzy6fAHfMrSKIb1dp+efglC3I=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T15:19:00.000Z,
+    blocked_until: null
+  },
+  {
+    id: 1,
+    identifier: 'U2FsdGVkX1/iIkwCZtMR/VL3b8Las5U7ii7wf5dJT5A=',
+    attempt_count: 1,
+    last_attempt: 2026-04-04T15:17:48.000Z,
+    blocked_until: null
+  }
+]

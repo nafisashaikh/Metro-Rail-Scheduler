@@ -80,10 +80,7 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
   }, [trains, stationPoints, coords]);
 
   const overallHealth = trains.length > 0 ? Math.round(trains.reduce((sum, t) => sum + t.health.overall, 0) / trains.length) : 100;
-  const healthyTrains = trains.filter(t => t.health.overall > 70).length;
-  const warningTrains = trains.filter(t => t.health.overall > 40 && t.health.overall <= 70).length;
-  const criticalTrains = trains.filter(t => t.health.overall <= 40).length;
-  const routeStatus = overallHealth > 70 ? '✓ Operational' : overallHealth > 40 ? '⚠ Degraded' : '✗ Disrupted';
+
 
   // Direct Leaflet map (avoid react-leaflet context issues with React 18)
   const mapRef = useRef<L.Map | null>(null);
@@ -220,8 +217,7 @@ export function SatelliteMap({ line, selectedStation, fromStation, toStation, tr
       const arrowLeft = `<span style="font-size: 16px; margin-right: -4px; color: ${line.color}; text-shadow: 0 0 2px white;">⬅</span>`;
       const displayIcon = isFwd ? `${icon}${arrowRight}` : `${arrowLeft}${icon}`;
       
-      const healthColor = train.health.overall > 70 ? '#10b981' : train.health.overall > 40 ? '#f59e0b' : '#ef4444';
-      const healthStatus = train.health.overall > 70 ? '✓ Operational' : train.health.overall > 40 ? '⚠ Warning' : '✗ Critical';
+
       
       const markerHtml = `
         <div style="
