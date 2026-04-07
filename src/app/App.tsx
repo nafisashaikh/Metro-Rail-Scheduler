@@ -182,12 +182,15 @@ export default function App() {
     setPortal('selector');
   }, []);
 
-  const handlePassengerSignupSuccess = useCallback((payload: { user: PassengerUser; token: string }) => {
-    setPassengerUser(payload.user);
-    setPortal('passenger');
-    localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
-    localStorage.setItem(AUTH_PORTAL_KEY, 'passenger');
-  }, []);
+  const handlePassengerSignupSuccess = useCallback(
+    (payload: { user: PassengerUser; token: string }) => {
+      setPassengerUser(payload.user);
+      setPortal('passenger');
+      localStorage.setItem(AUTH_TOKEN_KEY, payload.token);
+      localStorage.setItem(AUTH_PORTAL_KEY, 'passenger');
+    },
+    []
+  );
 
   const handleSwitchPortal = useCallback(() => {
     setPortal('selector');
@@ -400,7 +403,6 @@ export default function App() {
 
           {/* ── Main content ── */}
           <main className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 py-3 sm:py-5">
-
             <DashboardSection
               key={`passenger-${passengerSection}`}
               section={passengerSection}

@@ -257,7 +257,8 @@ export function DashboardSection({
                     {activeTrain.id}
                   </p>
                   <p className="text-xs text-blue-600 dark:text-blue-400">
-                    {activeTrain.status.toUpperCase()} · Health {activeTrain.health.overall}% · {activeTrain.capacity.current}/{activeTrain.capacity.total} seats
+                    {activeTrain.status.toUpperCase()} · Health {activeTrain.health.overall}% ·{' '}
+                    {activeTrain.capacity.current}/{activeTrain.capacity.total} seats
                   </p>
                 </div>
                 <button
@@ -296,10 +297,30 @@ export function DashboardSection({
             {trains.length > 0 && (
               <div className="grid grid-cols-4 gap-2">
                 {[
-                  { label: 'Trains', value: trains.length, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-                  { label: 'On Time', value: onTimeCount, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-                  { label: 'Delayed', value: delayedCount, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-                  { label: 'Avg Health', value: `${avgHealth}%`, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+                  {
+                    label: 'Trains',
+                    value: trains.length,
+                    color: 'text-blue-600 dark:text-blue-400',
+                    bg: 'bg-blue-50 dark:bg-blue-900/20',
+                  },
+                  {
+                    label: 'On Time',
+                    value: onTimeCount,
+                    color: 'text-emerald-600 dark:text-emerald-400',
+                    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                  },
+                  {
+                    label: 'Delayed',
+                    value: delayedCount,
+                    color: 'text-amber-600 dark:text-amber-400',
+                    bg: 'bg-amber-50 dark:bg-amber-900/20',
+                  },
+                  {
+                    label: 'Avg Health',
+                    value: `${avgHealth}%`,
+                    color: 'text-purple-600 dark:text-purple-400',
+                    bg: 'bg-purple-50 dark:bg-purple-900/20',
+                  },
                 ].map((s) => (
                   <div key={s.label} className={`rounded-xl p-3 text-center ${s.bg}`}>
                     <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
@@ -381,10 +402,34 @@ export function DashboardSection({
             </p>
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { label: 'Total Trains', value: trains.length, icon: TrainIcon, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-                { label: 'On Time', value: onTimeCount, icon: Clock, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-                { label: 'Delayed', value: delayedCount, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-                { label: 'Avg Health', value: `${avgHealth}%`, icon: Activity, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
+                {
+                  label: 'Total Trains',
+                  value: trains.length,
+                  icon: TrainIcon,
+                  color: 'text-blue-500',
+                  bg: 'bg-blue-50 dark:bg-blue-900/20',
+                },
+                {
+                  label: 'On Time',
+                  value: onTimeCount,
+                  icon: Clock,
+                  color: 'text-emerald-500',
+                  bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                },
+                {
+                  label: 'Delayed',
+                  value: delayedCount,
+                  icon: AlertTriangle,
+                  color: 'text-amber-500',
+                  bg: 'bg-amber-50 dark:bg-amber-900/20',
+                },
+                {
+                  label: 'Avg Health',
+                  value: `${avgHealth}%`,
+                  icon: Activity,
+                  color: 'text-purple-500',
+                  bg: 'bg-purple-50 dark:bg-purple-900/20',
+                },
               ].map((stat) => {
                 const Icon = stat.icon;
                 return (
@@ -441,7 +486,8 @@ export function DashboardSection({
         {activeTrain && activeTrainPosition && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 p-3 mb-1">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-              Active train: {activeTrain.id} · Status: {activeTrain.status} · Health: {activeTrain.health.overall}%
+              Active train: {activeTrain.id} · Status: {activeTrain.status} · Health:{' '}
+              {activeTrain.health.overall}%
             </p>
           </div>
         )}
@@ -526,14 +572,30 @@ export function DashboardSection({
               <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="w-4 h-4 text-blue-500" />
-                  <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Hourly Passenger Flow</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
+                    Hourly Passenger Flow
+                  </p>
                 </div>
                 <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={hourlyPassengers} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
+                  <BarChart
+                    data={hourlyPassengers}
+                    margin={{ top: 5, right: 10, bottom: 5, left: 0 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#f0f0f0'} />
-                    <XAxis dataKey="hour" tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} />
+                    <XAxis
+                      dataKey="hour"
+                      tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }}
+                    />
                     <YAxis tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} />
-                    <Tooltip contentStyle={{ background: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, borderRadius: 8, fontSize: 12, color: isDark ? '#f1f5f9' : '#1e293b' }} />
+                    <Tooltip
+                      contentStyle={{
+                        background: isDark ? '#1e293b' : '#fff',
+                        border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+                        borderRadius: 8,
+                        fontSize: 12,
+                        color: isDark ? '#f1f5f9' : '#1e293b',
+                      }}
+                    />
                     <Bar dataKey="passengers" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -541,39 +603,93 @@ export function DashboardSection({
               <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Weekly Performance Trend</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
+                    Weekly Performance Trend
+                  </p>
                 </div>
                 <ResponsiveContainer width="100%" height={180}>
                   <LineChart data={healthTrend} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#f0f0f0'} />
-                    <XAxis dataKey="day" tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} />
-                    <YAxis tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }} domain={[60, 100]} />
-                    <Tooltip contentStyle={{ background: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, borderRadius: 8, fontSize: 12, color: isDark ? '#f1f5f9' : '#1e293b' }} />
-                    <Line type="monotone" dataKey="health" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} name="Avg Health" />
-                    <Line type="monotone" dataKey="onTime" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="On-Time %" />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: isDark ? '#9ca3af' : '#6b7280' }}
+                      domain={[60, 100]}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: isDark ? '#1e293b' : '#fff',
+                        border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+                        borderRadius: 8,
+                        fontSize: 12,
+                        color: isDark ? '#f1f5f9' : '#1e293b',
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="health"
+                      stroke="#8b5cf6"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                      name="Avg Health"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="onTime"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                      name="On-Time %"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
                 <div className="flex gap-4 mt-2">
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 bg-purple-500" /><span className="text-xs text-slate-500">Avg Health %</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 bg-emerald-500" /><span className="text-xs text-slate-500">On-Time %</span></div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-0.5 bg-purple-500" />
+                    <span className="text-xs text-slate-500">Avg Health %</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-0.5 bg-emerald-500" />
+                    <span className="text-xs text-slate-500">On-Time %</span>
+                  </div>
                 </div>
               </div>
               {trains.length > 0 && (
                 <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <Zap className="w-4 h-4 text-amber-500" />
-                    <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Average Capacity</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
+                      Average Capacity
+                    </p>
                   </div>
                   <div className="flex items-center gap-6">
                     <ResponsiveContainer width={140} height={140}>
                       <PieChart>
-                        <Pie data={[{ name: 'Occupied', value: avgCapacity }, { name: 'Available', value: 100 - avgCapacity }]} cx="50%" cy="50%" innerRadius={45} outerRadius={65} dataKey="value" startAngle={90} endAngle={-270}>
-                          {CAPACITY_PIE_COLORS.map((c, i) => <Cell key={i} fill={c} />)}
+                        <Pie
+                          data={[
+                            { name: 'Occupied', value: avgCapacity },
+                            { name: 'Available', value: 100 - avgCapacity },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={45}
+                          outerRadius={65}
+                          dataKey="value"
+                          startAngle={90}
+                          endAngle={-270}
+                        >
+                          {CAPACITY_PIE_COLORS.map((c, i) => (
+                            <Cell key={i} fill={c} />
+                          ))}
                         </Pie>
                       </PieChart>
                     </ResponsiveContainer>
                     <div>
-                      <p className="text-3xl text-slate-900 dark:text-white font-bold">{avgCapacity}%</p>
+                      <p className="text-3xl text-slate-900 dark:text-white font-bold">
+                        {avgCapacity}%
+                      </p>
                       <p className="text-sm text-slate-500">Average load across all trains</p>
                     </div>
                   </div>
@@ -583,7 +699,10 @@ export function DashboardSection({
           )}
 
           {activeTab === 'alerts' && (
-            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6" style={{ minHeight: 480 }}>
+            <div
+              className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6"
+              style={{ minHeight: 480 }}
+            >
               <div className="flex items-center gap-2 mb-4">
                 <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                 <h3 className="text-slate-900 dark:text-white font-semibold">
@@ -601,7 +720,10 @@ export function DashboardSection({
           )}
 
           {activeTab === 'medical' && (
-            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6" style={{ minHeight: 480 }}>
+            <div
+              className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6"
+              style={{ minHeight: 480 }}
+            >
               <MedicalPrescription selectedStation={selectedStation} />
             </div>
           )}

@@ -222,9 +222,7 @@ export function Header({
                 {user.role !== 'passenger' && (
                   <div className="px-3 py-2 rounded-lg">
                     <p className="text-xs text-slate-500 dark:text-slate-400">Department</p>
-                    <p className="text-sm text-slate-700 dark:text-slate-300">
-                      {user.department}
-                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300">{user.department}</p>
                   </div>
                 )}
                 {onSwitchPortal && (

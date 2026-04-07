@@ -91,7 +91,10 @@ export function ScheduleDisplay({ trains, station, lineColor }: ScheduleDisplayP
               onClick={() => setSelectedTrain(train)}
             >
               <div className="flex-shrink-0 text-center min-w-[72px]">
-                <div className="text-2xl text-slate-900 dark:text-white" style={{ fontWeight: 700, lineHeight: 1 }}>
+                <div
+                  className="text-2xl text-slate-900 dark:text-white"
+                  style={{ fontWeight: 700, lineHeight: 1 }}
+                >
                   {train.departureTime}
                 </div>
                 <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
@@ -106,7 +109,10 @@ export function ScheduleDisplay({ trains, station, lineColor }: ScheduleDisplayP
                   <div>
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <span className="text-xs text-slate-400 dark:text-slate-500">To</span>
-                      <span className="text-sm text-slate-800 dark:text-slate-200" style={{ fontWeight: 600 }}>
+                      <span
+                        className="text-sm text-slate-800 dark:text-slate-200"
+                        style={{ fontWeight: 600 }}
+                      >
                         {train.destination}
                       </span>
                     </div>
@@ -125,7 +131,9 @@ export function ScheduleDisplay({ trains, station, lineColor }: ScheduleDisplayP
                 <div className="flex items-center gap-4 mt-2 flex-wrap">
                   <div className="flex items-center gap-1 text-xs">
                     <Activity className="w-3 h-3 text-slate-400" />
-                    <span className={getHealthColor(train.health.overall)}>{train.health.overall}%</span>
+                    <span className={getHealthColor(train.health.overall)}>
+                      {train.health.overall}%
+                    </span>
                   </div>
                   <div className={`text-xs ${getCapacityColor(train.capacity.percentage)}`}>
                     {train.capacity.percentage}% full
@@ -144,42 +152,49 @@ export function ScheduleDisplay({ trains, station, lineColor }: ScheduleDisplayP
         })}
       </div>
 
-      {selectedTrain && (() => {
-        const pred = predictTrainArrival(selectedTrain, station);
-        return (
-          <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wider" style={{ fontWeight: 700 }}>
-                  Selected train
-                </p>
-                <p className="text-sm text-slate-900 dark:text-white" style={{ fontWeight: 700 }}>
-                  {selectedTrain.trainNumber} · {selectedTrain.destination}
-                </p>
+      {selectedTrain &&
+        (() => {
+          const pred = predictTrainArrival(selectedTrain, station);
+          return (
+            <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p
+                    className="text-xs text-slate-400 uppercase tracking-wider"
+                    style={{ fontWeight: 700 }}
+                  >
+                    Selected train
+                  </p>
+                  <p className="text-sm text-slate-900 dark:text-white" style={{ fontWeight: 700 }}>
+                    {selectedTrain.trainNumber} · {selectedTrain.destination}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTrain(null)}
+                  className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                >
+                  Clear
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedTrain(null)}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-              >
-                Clear
-              </button>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TrainHealthCard trainNumber={selectedTrain.trainNumber} health={selectedTrain.health} />
-              <CapacityVisualization capacity={selectedTrain.capacity} />
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TrainHealthCard
+                  trainNumber={selectedTrain.trainNumber}
+                  health={selectedTrain.health}
+                />
+                <CapacityVisualization capacity={selectedTrain.capacity} />
+              </div>
 
-            <PredictiveScheduling
-              scheduledTime={selectedTrain.departureTime}
-              predictedTime={pred.predictedTime}
-              confidence={pred.confidence}
-              factors={pred.factors}
-            />
-          </div>
-        );
-      })()}
+              <PredictiveScheduling
+                scheduledTime={selectedTrain.departureTime}
+                predictedTime={pred.predictedTime}
+                confidence={pred.confidence}
+                factors={pred.factors}
+              />
+            </div>
+          );
+        })()}
     </div>
   );
 }

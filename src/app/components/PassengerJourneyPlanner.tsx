@@ -93,7 +93,15 @@ function CapacityBadge({ pct }: { pct: number }) {
 }
 
 // ─── Train card ────────────────────────────────────────────────────────────────
-function TrainCard({ train, lineColor, onClick }: { train: Train; lineColor: string; onClick?: () => void }) {
+function TrainCard({
+  train,
+  lineColor,
+  onClick,
+}: {
+  train: Train;
+  lineColor: string;
+  onClick?: () => void;
+}) {
   const statusConfig = {
     'on-time': {
       label: 'On Time',
@@ -185,7 +193,11 @@ function TrainCard({ train, lineColor, onClick }: { train: Train; lineColor: str
 // ─── Main component ────────────────────────────────────────────────────────────
 const PAGE_SIZE = 4;
 
-export function PassengerJourneyPlanner({ lines, section, onTrainSelect }: PassengerJourneyPlannerProps) {
+export function PassengerJourneyPlanner({
+  lines,
+  section,
+  onTrainSelect,
+}: PassengerJourneyPlannerProps) {
   const [selectedLine, setSelectedLine] = useState<MetroLine | null>(lines[0] || null);
   const [fromStation, setFromStation] = useState('');
   const [toStation, setToStation] = useState('');
@@ -478,44 +490,44 @@ export function PassengerJourneyPlanner({ lines, section, onTrainSelect }: Passe
               </div>
             </div>
 
-          {trains.length === 0 ? (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center">
-              <AlertTriangle className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                No trains found for this route right now.
-              </p>
-            </div>
-          ) : (
-            <>
-              {visibleTrains.map((train) => (
-                <TrainCard
-                  key={train.id}
-                  train={train}
-                  lineColor={selectedLine?.color || '#3b82f6'}
-                  onClick={() => {
-                    onTrainSelect?.(train, fromStation, toStation);
-                  }}
-                />
-              ))}
-
-              {/* Load more (pagination for low-bandwidth) */}
-              {hasMore ? (
-                <button
-                  onClick={() => setShowCount((c) => c + PAGE_SIZE)}
-                  className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                  Show {Math.min(PAGE_SIZE, trains.length - showCount)} more trains
-                </button>
-              ) : (
-                <p className="text-center text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  All {trains.length} upcoming trains shown
+            {trains.length === 0 ? (
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center">
+                <AlertTriangle className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  No trains found for this route right now.
                 </p>
-              )}
-            </>
-          )}
-        </div>
+              </div>
+            ) : (
+              <>
+                {visibleTrains.map((train) => (
+                  <TrainCard
+                    key={train.id}
+                    train={train}
+                    lineColor={selectedLine?.color || '#3b82f6'}
+                    onClick={() => {
+                      onTrainSelect?.(train, fromStation, toStation);
+                    }}
+                  />
+                ))}
+
+                {/* Load more (pagination for low-bandwidth) */}
+                {hasMore ? (
+                  <button
+                    onClick={() => setShowCount((c) => c + PAGE_SIZE)}
+                    className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                    Show {Math.min(PAGE_SIZE, trains.length - showCount)} more trains
+                  </button>
+                ) : (
+                  <p className="text-center text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    All {trains.length} upcoming trains shown
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

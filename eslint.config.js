@@ -56,6 +56,9 @@ export default [
       ...tsESLint.configs.recommended.rules,
       ...reactPlugin.configs.recommended.rules,
 
+      // TypeScript already reports undefined variables/types; ESLint's no-undef misfires on TS DOM types.
+      'no-undef': 'off',
+
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       '@typescript-eslint/no-unused-vars': [

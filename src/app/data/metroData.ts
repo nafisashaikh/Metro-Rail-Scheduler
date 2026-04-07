@@ -1,5 +1,9 @@
 import { MetroLine, Train, StationMetrics } from '../types/metro';
-import { generateTrainHealth, generateTrainCapacity, generateDepartureTimes } from '../utils/trainGenerators';
+import {
+  generateTrainHealth,
+  generateTrainCapacity,
+  generateDepartureTimes,
+} from '../utils/trainGenerators';
 
 // ─── Mumbai Metro Lines ──────────────────────────────────────────────────────
 
@@ -139,12 +143,12 @@ export const mumbaiMetroLines: MetroLine[] = [
       { name: 'Shitaladevi', lat: 19.0268, lng: 72.8422 },
       { name: 'Dharavi', lat: 19.044, lng: 72.8556 },
       { name: 'BKC', lat: 19.0601, lng: 72.8665 },
-      { name: 'Santacruz', lat: 19.0815, lng: 72.8500 }, // Shifted slightly east to smooth path
-      { name: 'Domestic Airport', lat: 19.0880, lng: 72.8550 },
+      { name: 'Santacruz', lat: 19.0815, lng: 72.85 }, // Shifted slightly east to smooth path
+      { name: 'Domestic Airport', lat: 19.088, lng: 72.855 },
       { name: 'International Airport', lat: 19.0938, lng: 72.8602 },
-      { name: 'Sahar Road', lat: 19.1000, lng: 72.8650 },
+      { name: 'Sahar Road', lat: 19.1, lng: 72.865 },
       { name: 'Marol Naka', lat: 19.1051, lng: 72.8683 },
-      { name: 'MIDC', lat: 19.1100, lng: 72.8700 },
+      { name: 'MIDC', lat: 19.11, lng: 72.87 },
       { name: 'SEEPZ', lat: 19.1217, lng: 72.8744 },
       { name: 'Aarey', lat: 19.152, lng: 72.8571 },
     ],

@@ -4,6 +4,8 @@ import { env } from './config/env.js';
 import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
 import { schedulesRouter } from './routes/schedules.js';
+import { realtimeRouter } from './routes/realtime.js';
+import { realtimeRouter as realtimeGtfsRouter } from './routes/realtime-gtfs.js';
 import { rateLimiter, cleanupRateLimitStore } from './middleware/rateLimiter.js';
 import { sanitizeInput, enforceHTTPS, securityHeaders, requestLogger } from './middleware/security.js';
 
@@ -58,3 +60,5 @@ app.get('/', (_req, res) => {
 app.use('/health', healthRouter);
 app.use('/auth', authRouter);
 app.use('/schedules', schedulesRouter);
+app.use('/realtime', realtimeRouter);
+app.use('/api/realtime-gtfs', realtimeGtfsRouter);

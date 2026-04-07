@@ -120,10 +120,10 @@ export function SatelliteMap({
     if (stationPoints.length === 1) {
       mapRef.current.setView(stationPoints[0], 14);
     } else {
-      mapRef.current.fitBounds(
-        L.latLngBounds(stationPoints.map((p) => L.latLng(p[0], p[1]))),
-        { padding: [40, 40], animate: true }
-      );
+      mapRef.current.fitBounds(L.latLngBounds(stationPoints.map((p) => L.latLng(p[0], p[1]))), {
+        padding: [40, 40],
+        animate: true,
+      });
     }
   }, [stationPoints]);
 
@@ -239,7 +239,12 @@ export function SatelliteMap({
         );
       } else {
         marker = L.marker(position, {
-          icon: L.divIcon({ html, iconSize: [56, 36], iconAnchor: [28, 18], className: 'train-mk' }),
+          icon: L.divIcon({
+            html,
+            iconSize: [56, 36],
+            iconAnchor: [28, 18],
+            className: 'train-mk',
+          }),
           interactive: true,
           riseOnHover: true,
           zIndexOffset: 1000,
@@ -276,8 +281,7 @@ export function SatelliteMap({
     });
   }, [trainsPoints, line.color, line.name, onTrainSelect]);
 
-  const healthColor =
-    overallHealth > 70 ? '#10b981' : overallHealth > 40 ? '#f59e0b' : '#ef4444';
+  const healthColor = overallHealth > 70 ? '#10b981' : overallHealth > 40 ? '#f59e0b' : '#ef4444';
 
   return (
     <div className="relative h-full w-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
@@ -330,11 +334,19 @@ export function SatelliteMap({
           <div className="flex items-center gap-2 mb-2">
             <span
               style={{
-                width: 10, height: 10, borderRadius: '50%', background: healthColor,
-                boxShadow: `0 0 6px ${healthColor}`, animation: 'lp 1.4s infinite', display: 'inline-block', flexShrink: 0,
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: healthColor,
+                boxShadow: `0 0 6px ${healthColor}`,
+                animation: 'lp 1.4s infinite',
+                display: 'inline-block',
+                flexShrink: 0,
               }}
             />
-            <p className="text-xs font-semibold leading-tight truncate max-w-[110px]">{line.name}</p>
+            <p className="text-xs font-semibold leading-tight truncate max-w-[110px]">
+              {line.name}
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-2 text-center text-[11px]">
             <div className="rounded-lg bg-white/5 py-1.5">
@@ -346,14 +358,32 @@ export function SatelliteMap({
               <div className="font-bold">{trains.length}</div>
             </div>
           </div>
-          {(fromStation && toStation) && (
+          {fromStation && toStation && (
             <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
               <div className="flex items-center gap-1.5 text-[10px] text-white/70">
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', display: 'inline-block', flexShrink: 0 }} />
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#3b82f6',
+                    display: 'inline-block',
+                    flexShrink: 0,
+                  }}
+                />
                 <span className="truncate">{fromStation}</span>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-white/70">
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block', flexShrink: 0 }} />
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#ef4444',
+                    display: 'inline-block',
+                    flexShrink: 0,
+                  }}
+                />
                 <span className="truncate">{toStation}</span>
               </div>
             </div>
@@ -375,15 +405,23 @@ export function SatelliteMap({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg">{line.name.includes('Metro') ? '🚇' : '🚂'}</span>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{activePanel.train.id}</h3>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                  activePanel.train.status === 'on-time'
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {activePanel.train.id}
+                </h3>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    activePanel.train.status === 'on-time'
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                      : activePanel.train.status === 'delayed'
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  }`}
+                >
+                  {activePanel.train.status === 'on-time'
+                    ? '✓ On Time'
                     : activePanel.train.status === 'delayed'
-                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                }`}>
-                  {activePanel.train.status === 'on-time' ? '✓ On Time' : activePanel.train.status === 'delayed' ? '⚠ Delayed' : '✗ Cancelled'}
+                      ? '⚠ Delayed'
+                      : '✗ Cancelled'}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -407,9 +445,13 @@ export function SatelliteMap({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-slate-500 dark:text-slate-400">At Station</p>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{activePanel.currentStation}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                {activePanel.currentStation}
+              </p>
               <p className="text-xs text-slate-400 mt-1">Next Stop</p>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{activePanel.nextStation}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                {activePanel.nextStation}
+              </p>
             </div>
           </div>
 
@@ -417,25 +459,43 @@ export function SatelliteMap({
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3 text-center">
               <p className="text-xs text-slate-400 mb-1">Health</p>
-              <p className={`text-lg font-bold ${
-                activePanel.train.health.overall > 70 ? 'text-emerald-600' : activePanel.train.health.overall > 40 ? 'text-amber-600' : 'text-red-600'
-              }`}>
+              <p
+                className={`text-lg font-bold ${
+                  activePanel.train.health.overall > 70
+                    ? 'text-emerald-600'
+                    : activePanel.train.health.overall > 40
+                      ? 'text-amber-600'
+                      : 'text-red-600'
+                }`}
+              >
                 {activePanel.train.health.overall}%
               </p>
             </div>
             <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3 text-center">
               <p className="text-xs text-slate-400 mb-1">Capacity</p>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">{activePanel.train.capacity.percentage}%</p>
-              <p className="text-[10px] text-slate-400">{activePanel.train.capacity.current}/{activePanel.train.capacity.total}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">
+                {activePanel.train.capacity.percentage}%
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {activePanel.train.capacity.current}/{activePanel.train.capacity.total}
+              </p>
             </div>
             <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3 text-center">
               <p className="text-xs text-slate-400 mb-1">Status</p>
-              <p className={`text-sm font-bold ${
-                activePanel.train.status === 'on-time' ? 'text-emerald-600' :
-                activePanel.train.status === 'delayed' ? 'text-amber-600' : 'text-red-600'
-              }`}>
-                {activePanel.train.status === 'on-time' ? 'On Time' :
-                 activePanel.train.status === 'delayed' ? 'Delayed' : 'Cancelled'}
+              <p
+                className={`text-sm font-bold ${
+                  activePanel.train.status === 'on-time'
+                    ? 'text-emerald-600'
+                    : activePanel.train.status === 'delayed'
+                      ? 'text-amber-600'
+                      : 'text-red-600'
+                }`}
+              >
+                {activePanel.train.status === 'on-time'
+                  ? 'On Time'
+                  : activePanel.train.status === 'delayed'
+                    ? 'Delayed'
+                    : 'Cancelled'}
               </p>
             </div>
           </div>

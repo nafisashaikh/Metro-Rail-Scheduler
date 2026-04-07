@@ -87,12 +87,16 @@ export function PassengerSignupPage({
             <UserPlus className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight mb-2">Passenger Sign Up</h1>
-          <p className="text-sm text-slate-500">Create your commuter account for journey planning</p>
+          <p className="text-sm text-slate-500">
+            Create your commuter account for journey planning
+          </p>
         </div>
 
         <div className="space-y-5">
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Full Name</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">
+              Full Name
+            </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -106,7 +110,9 @@ export function PassengerSignupPage({
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Username or Email</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">
+              Username or Email
+            </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -117,11 +123,15 @@ export function PassengerSignupPage({
                 autoComplete="username"
               />
             </div>
-            <p className="mt-1 text-xs text-slate-400">Allowed: letters, numbers, dot, underscore, hyphen, @</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Allowed: letters, numbers, dot, underscore, hyphen, @
+            </p>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Password</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">
+              Password
+            </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -139,11 +149,15 @@ export function PassengerSignupPage({
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="mt-1 text-xs text-slate-400">At least 8 chars with upper, lower, number, and special.</p>
+            <p className="mt-1 text-xs text-slate-400">
+              At least 8 chars with upper, lower, number, and special.
+            </p>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Confirm Password</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">
+              Confirm Password
+            </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -169,7 +183,9 @@ export function PassengerSignupPage({
           <div className="pt-6">
             <button
               onClick={handleSignup}
-              disabled={loading || !name.trim() || !username.trim() || !password || !confirmPassword}
+              disabled={
+                loading || !name.trim() || !username.trim() || !password || !confirmPassword
+              }
               className="w-full py-4 bg-orange-600 dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm hover:opacity-80 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (

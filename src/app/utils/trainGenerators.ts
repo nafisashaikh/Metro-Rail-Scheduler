@@ -6,7 +6,7 @@ export const generateTrainHealth = (): TrainHealth => {
   const doors = 78 + Math.random() * 22;
   const ac = 65 + Math.random() * 35;
   const overall = (engine + brakes + doors + ac) / 4;
-  
+
   let status: TrainHealth['status'];
   if (overall >= 90) status = 'excellent';
   else if (overall >= 75) status = 'good';
@@ -43,7 +43,7 @@ export const generateTrainCapacity = (time: string, totalCapacity = 1500): Train
   }
 
   const current = Math.round(totalCapacity * occ);
-  
+
   return {
     total: totalCapacity,
     current,

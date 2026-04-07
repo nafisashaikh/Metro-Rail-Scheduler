@@ -10,7 +10,7 @@ for (const key of required) {
 }
 
 export const env = {
-  port: Number(process.env.PORT ?? 4000),
+  port: Number(process.env.PORT ?? 4001), // Updated to 4001 to match error messages
   jwtSecret: process.env.JWT_SECRET as string,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '8h',
   frontendOrigin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',

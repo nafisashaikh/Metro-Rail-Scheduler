@@ -1,5 +1,9 @@
 import { MetroLine, StationMetrics, Train } from '../types/metro';
-import { generateTrainHealth, generateTrainCapacity, generateDepartureTimes } from '../utils/trainGenerators';
+import {
+  generateTrainHealth,
+  generateTrainCapacity,
+  generateDepartureTimes,
+} from '../utils/trainGenerators';
 
 // ─── Mumbai Western Railway ──────────────────────────────────────────────────
 

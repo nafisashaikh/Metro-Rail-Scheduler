@@ -84,9 +84,7 @@ export function SimpleCaptcha({ onVerify, className }: SimpleCaptchaProps) {
           </Button>
         )}
 
-        {isVerified && (
-          <span className="text-green-600 font-medium">✓ Verified</span>
-        )}
+        {isVerified && <span className="text-green-600 font-medium">✓ Verified</span>}
 
         <Button
           type="button"
@@ -99,9 +97,7 @@ export function SimpleCaptcha({ onVerify, className }: SimpleCaptchaProps) {
         </Button>
       </div>
       {!isVerified && userAnswer && (
-        <p className="text-xs text-muted-foreground mt-1">
-          Enter the result to continue
-        </p>
+        <p className="text-xs text-muted-foreground mt-1">Enter the result to continue</p>
       )}
     </div>
   );
@@ -109,7 +105,7 @@ export function SimpleCaptcha({ onVerify, className }: SimpleCaptchaProps) {
 
 /**
  * Google reCAPTCHA v2 Integration (for production)
- * 
+ *
  * Usage:
  * 1. Get site key from https://www.google.com/recaptcha/admin
  * 2. Install: npm install react-google-recaptcha @types/react-google-recaptcha

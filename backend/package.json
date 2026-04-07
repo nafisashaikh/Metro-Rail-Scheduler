@@ -13,10 +13,13 @@
     "@types/crypto-js": "^4.2.2",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
+    "csv-parse": "^6.2.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "gtfs-realtime-bindings": "^1.1.1",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.20.0",
+    "node-fetch": "^3.3.2",
     "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
