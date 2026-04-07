@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
-import {
-  MetroLine,
-  Train,
-  StationMetrics,
-  Alert,
-  SystemSection,
-  UserRole,
-  WeatherData,
-} from '../types/metro';
+import { useNetworkQuality } from '../hooks/useNetworkQuality';
+import { MetroLine, Train, StationMetrics, Alert, UserRole, WeatherData, PassengerUser, SystemSection } from '../types/metro';
+import { translations, Language } from '../i18n/translations';
 import { generateTrainsForStation, getStationMetrics } from '../data/metroData';
 import { generateRailwayTrains, getRailwayStationMetrics } from '../data/railwayData';
 import { MetroLineSelector } from './MetroLineSelector';
@@ -22,6 +16,12 @@ import { WeatherWidget } from './WeatherWidget';
 import { RouteMapVisualization } from './RouteMapVisualization';
 import { MedicalPrescription } from './MedicalPrescription';
 import { PassengerJourneyPlanner } from './PassengerJourneyPlanner';
+import { PassengerPass } from './PassengerPass';
+import { AiHelpDesk } from './AiHelpDesk';
+import { StationBlueprint } from './StationBlueprint';
+import { EcoStats } from './EcoStats';
+import { StaffTasks } from './StaffTasks';
+import { StaffBroadcast } from './StaffBroadcast';
 import {
   Calendar,
   Map,
@@ -37,6 +37,12 @@ import {
   AlertTriangle,
   MapPin,
   Stethoscope,
+  QrCode,
+  Bot,
+  Compass,
+  WifiOff, 
+  ZapOff,
+  Megaphone
 } from 'lucide-react';
 import {
   BarChart,
@@ -64,6 +70,8 @@ interface DashboardSectionProps {
   isDark: boolean;
   showAlerts: boolean;
   onCloseAlerts: () => void;
+  passengerUser?: PassengerUser;
+  lang?: string;
 }
 
 // Staff tabs
@@ -74,19 +82,22 @@ const STAFF_TABS = [
   { id: 'analytics', label: 'Analytics', icon: BarChart2 },
   { id: 'alerts', label: 'Alerts', icon: Bell },
   { id: 'medical', label: 'Medical Guide', icon: Stethoscope },
+  { id: 'broadcast', label: 'Broadcast', icon: Megaphone },
 ] as const;
 
 // Passenger tabs — full feature set including Medical
-const PASSENGER_TABS = [
-  { id: 'journey', label: 'Journey Planner', icon: MapPin },
-  { id: 'map', label: 'Live Map', icon: Map },
-  { id: 'alerts', label: 'Announcements', icon: Bell },
-  { id: 'medical', label: 'Medical Guide', icon: Stethoscope },
+const getPassengerTabs = (t: any) => [
+  { id: 'journey', icon: MapPin, label: t.journey },
+  { id: 'pass', icon: QrCode, label: t.pass },
+  { id: 'map', icon: Map, label: t.map },
+  { id: 'guide', icon: Compass, label: t.guide },
+  { id: 'alerts', icon: Bell, label: t.alerts },
+  { id: 'medical', icon: Stethoscope, label: t.medical },
+  { id: 'support', icon: Bot, label: t.support },
 ] as const;
 
 type StaffTabId = (typeof STAFF_TABS)[number]['id'];
-type PassengerTabId = (typeof PASSENGER_TABS)[number]['id'];
-type TabId = StaffTabId | PassengerTabId;
+type TabId = StaffTabId | string;
 
 const CAPACITY_PIE_COLORS = ['#3b82f6', '#e5e7eb'];
 
@@ -101,8 +112,12 @@ export function DashboardSection({
   isDark,
   showAlerts,
   onCloseAlerts,
+  passengerUser,
+  lang = 'en',
 }: DashboardSectionProps) {
+  const t = translations[lang as Language] || translations.en;
   const isPassenger = userRole === 'passenger';
+  const PASSENGER_TABS = getPassengerTabs(t);
   const TAB_LIST = isPassenger ? PASSENGER_TABS : STAFF_TABS;
   const [selectedLine, setSelectedLine] = useState<MetroLine | null>(lines[0] || null);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
@@ -116,8 +131,8 @@ export function DashboardSection({
     if (selectedLine && selectedStation) {
       const generated =
         section === 'metro'
-          ? generateTrainsForStation(selectedStation, selectedLine)
-          : generateRailwayTrains(selectedStation, selectedLine);
+          ? generateTrainsForStation(selectedStation, selectedLine, weather.condition)
+          : generateRailwayTrains(selectedStation, selectedLine, weather.condition);
       setTrains(generated);
       const m =
         section === 'metro'
@@ -200,9 +215,40 @@ export function DashboardSection({
   // ══════════════════════════════════════════════════════════════════════════════
   // PASSENGER LAYOUT — full-width, no sidebar, mobile-first
   // ══════════════════════════════════════════════════════════════════════════════
+  const networkQuality = useNetworkQuality();
+  const [forceLowBandwidth, setForceLowBandwidth] = useState(false);
+  const isLowBandwidth = networkQuality === 'low' || forceLowBandwidth;
+
+  useEffect(() => {
+    if (networkQuality === 'low') {
+        setForceLowBandwidth(true);
+    }
+  }, [networkQuality]);
+
+  const toggleDataSaver = () => setForceLowBandwidth(!forceLowBandwidth);
+
   if (isPassenger) {
     return (
       <div className="flex flex-col gap-4">
+        {/* Data Saver Mode Active Alert */}
+        {isLowBandwidth && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 p-2.5 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <WifiOff className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">{t.liteMode}</span>
+                </div>
+                <button 
+                    onClick={toggleDataSaver}
+                    className="text-[10px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+                >
+                    {t.switchFull}
+                </button>
+            </div>
+        )}
+
+        {/* Eco Stats Banner - HIDDEN in low bandwidth to save data/rendering */}
+        {!isLowBandwidth && <EcoStats />}
+
         {/* Tab bar */}
         {TabBar}
 
@@ -212,6 +258,8 @@ export function DashboardSection({
             <PassengerJourneyPlanner
               lines={lines}
               section={section}
+              isLowBandwidth={isLowBandwidth}
+              weatherCondition={weather.condition}
               onTrainSelect={(train, source) => {
                 setActiveTrain(train);
                 setActiveTab('map');
@@ -363,6 +411,60 @@ export function DashboardSection({
             <MedicalPrescription selectedStation={selectedStation} />
           </div>
         )}
+
+        {/* Passenger Pass */}
+        {activeTab === 'pass' && passengerUser && (
+          <div
+            className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6"
+            style={{ minHeight: 480 }}
+          >
+            <PassengerPass user={passengerUser} />
+          </div>
+        )}
+
+        {/* AI Support */}
+        {activeTab === 'support' && (
+          <div
+            className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6"
+            style={{ minHeight: 480 }}
+          >
+            <div className="max-w-3xl mx-auto">
+              <AiHelpDesk />
+            </div>
+          </div>
+        )}
+
+        {/* Station Guide */}
+        {activeTab === 'guide' && (
+          <div
+            className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6"
+            style={{ minHeight: 480 }}
+          >
+            {selectedStation ? (
+              isLowBandwidth ? (
+                <div className="h-full flex flex-col items-center justify-center py-20 text-center">
+                    <ZapOff className="w-12 h-12 mb-4 text-slate-300" />
+                    <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Map restricted in Lite Mode</h3>
+                    <p className="text-xs text-slate-500 max-w-xs mt-1">Downloading station blueprints requires high bandwidth. Please switch to 'Full Mode' to view the map.</p>
+                    <button 
+                        onClick={toggleDataSaver}
+                        className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-bold"
+                    >
+                        Enable Full Mode
+                    </button>
+                </div>
+              ) : (
+                <StationBlueprint stationName={selectedStation} />
+              )
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center py-20 text-slate-400">
+                <Compass className="w-16 h-16 mb-4 opacity-30" />
+                <p className="text-lg mb-1 text-slate-500 font-medium">Select a station first</p>
+                <p className="text-sm text-center max-w-xs">Use the Live Map or Journey Planner to select a station and view its layout guide.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -474,6 +576,11 @@ export function DashboardSection({
             />
           </div>
         )}
+        
+        {/* Staff Task Manager */}
+        <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4">
+          <StaffTasks />
+        </div>
 
         <WeatherWidget weather={weather} />
       </div>
@@ -715,6 +822,16 @@ export function DashboardSection({
                 onAdd={onAddAlert}
                 userRole={userRole}
                 section={section}
+              />
+            </div>
+          )}
+
+          {/* Staff Broadcast Section */}
+          {activeTab === 'broadcast' && (
+            <div className="max-w-2xl mx-auto py-10">
+              <StaffBroadcast 
+                section={section} 
+                onBroadcast={onAddAlert} 
               />
             </div>
           )}

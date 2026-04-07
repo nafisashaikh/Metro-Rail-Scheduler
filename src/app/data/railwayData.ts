@@ -3,6 +3,8 @@ import {
   generateTrainHealth,
   generateTrainCapacity,
   generateDepartureTimes,
+  generateCrowdLevels,
+  generateStationFacilities,
 } from '../utils/trainGenerators';
 
 // ─── Mumbai Western Railway ──────────────────────────────────────────────────
@@ -276,7 +278,7 @@ export const maharashtraRailwayLines: MetroLine[] = [
 
 // ─── Shared generators ────────────────────────────────────────────────────────
 
-export const generateRailwayTrains = (station: string, line: MetroLine): Train[] => {
+export const generateRailwayTrains = (station: string, line: MetroLine, weatherCondition?: string): Train[] => {
   const times = generateDepartureTimes();
   const trains: Train[] = [];
   const idx = line.stations.indexOf(station);
@@ -297,14 +299,18 @@ export const generateRailwayTrains = (station: string, line: MetroLine): Train[]
         line: line.name,
         destination: line.stations[line.stations.length - 1],
         departureTime: time,
-        platform: idx % 2 === 0 ? '1' : '2',
-        status: Math.random() > 0.85 ? 'delayed' : 'on-time',
+        platform: ['1', '2', '3', '4', '5', '6'][Math.floor(Math.random() * 6)],
+        status: (weatherCondition?.includes('Rain') || weatherCondition?.includes('Storm')) 
+            ? Math.random() > 0.3 ? 'delayed' : 'on-time' 
+            : Math.random() > 0.9 ? 'delayed' : 'on-time',
         health: generateTrainHealth(),
         capacity: generateTrainCapacity(time),
+        crowdLevels: generateCrowdLevels(generateTrainCapacity(time).percentage),
       });
     }
     if (idx > 0 && i < 11) {
       const rev = times[i * 2 + 1] || time;
+      const revCap = generateTrainCapacity(rev);
       trains.push({
         id: `${line.id}-${station}-rev-${i}`,
         trainNumber: `${prefix}${91001 + i}`,
@@ -314,7 +320,8 @@ export const generateRailwayTrains = (station: string, line: MetroLine): Train[]
         platform: idx % 2 === 0 ? '2' : '1',
         status: Math.random() > 0.88 ? 'delayed' : 'on-time',
         health: generateTrainHealth(),
-        capacity: generateTrainCapacity(rev),
+        capacity: revCap,
+        crowdLevels: generateCrowdLevels(revCap.percentage),
       });
     }
   });
@@ -353,5 +360,6 @@ export const getRailwayStationMetrics = (station: string): StationMetrics => {
       : Math.random() > 0.6
         ? 'medium'
         : 'low',
+    facilities: generateStationFacilities(),
   };
 };

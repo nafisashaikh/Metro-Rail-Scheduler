@@ -52,6 +52,11 @@ export interface Train {
   trainNumber: string;
   health: TrainHealth;
   capacity: TrainCapacity;
+  crowdLevels?: {
+    front: 'low' | 'medium' | 'high';
+    middle: 'low' | 'medium' | 'high';
+    rear: 'low' | 'medium' | 'high';
+  };
 }
 
 export interface TrainHealth {
@@ -80,6 +85,12 @@ export interface StationMetrics {
   dailyPassengers: number;
   peakHours: string[];
   congestionLevel: 'low' | 'medium' | 'high';
+  facilities?: {
+    atm: 'operational' | 'out-of-order';
+    toilet: 'operational' | 'out-of-order';
+    parking: 'available' | 'full' | 'none';
+    drinkingWater: 'operational' | 'out-of-order';
+  };
 }
 
 export interface SchedulePrediction {

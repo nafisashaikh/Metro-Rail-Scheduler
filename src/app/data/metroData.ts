@@ -3,6 +3,8 @@ import {
   generateTrainHealth,
   generateTrainCapacity,
   generateDepartureTimes,
+  generateCrowdLevels,
+  generateStationFacilities,
 } from '../utils/trainGenerators';
 
 // ─── Mumbai Metro Lines ──────────────────────────────────────────────────────
@@ -249,7 +251,7 @@ export const mumbaiMetroLines: MetroLine[] = [
 
 // ─── Shared train data generators ────────────────────────────────────────────
 
-export const generateTrainsForStation = (station: string, line: MetroLine): Train[] => {
+export const generateTrainsForStation = (station: string, line: MetroLine, weatherCondition?: string): Train[] => {
   const departureTimes = generateDepartureTimes(5, 23, line.networkType === 'metro' ? 8 : 10);
   const trains: Train[] = [];
   const stationIndex = line.stations.indexOf(station);
@@ -268,13 +270,17 @@ export const generateTrainsForStation = (station: string, line: MetroLine): Trai
         destination: line.stations[line.stations.length - 1],
         departureTime: time,
         platform: stationIndex % 2 === 0 ? '1' : '2',
-        status: Math.random() > 0.85 ? 'delayed' : 'on-time',
+        status: (weatherCondition?.includes('Rain') || weatherCondition?.includes('Storm')) 
+            ? Math.random() > 0.4 ? 'delayed' : 'on-time' 
+            : Math.random() > 0.85 ? 'delayed' : 'on-time',
         health: generateTrainHealth(),
         capacity: generateTrainCapacity(time, totalCap),
+        crowdLevels: generateCrowdLevels(Math.round((generateTrainCapacity(time, totalCap).current / totalCap) * 100)),
       });
     }
     if (stationIndex > 0 && index < 11) {
       const revTime = departureTimes[index * 2 + 1] || time;
+      const revCap = generateTrainCapacity(revTime, totalCap);
       trains.push({
         id: `${line.id}-${station}-rev-${index}`,
         trainNumber: `${prefix}${trainNum + 1000}`,
@@ -284,7 +290,8 @@ export const generateTrainsForStation = (station: string, line: MetroLine): Trai
         platform: stationIndex % 2 === 0 ? '2' : '1',
         status: Math.random() > 0.88 ? 'delayed' : 'on-time',
         health: generateTrainHealth(),
-        capacity: generateTrainCapacity(revTime, totalCap),
+        capacity: revCap,
+        crowdLevels: generateCrowdLevels(revCap.percentage),
       });
     }
   });

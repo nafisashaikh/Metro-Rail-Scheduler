@@ -1,7 +1,6 @@
-// Backend default is PORT=4001 (see backend/src/config/env.ts and backend/.env.example)
-const defaultApiBase = `${window.location.protocol}//${window.location.hostname}:4001`;
-
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? defaultApiBase;
+// In development, we use Vite proxy (see vite.config.ts)
+// In production, we can use an environment variable
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? '' : '');
 
 export function apiUrl(path: string): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;

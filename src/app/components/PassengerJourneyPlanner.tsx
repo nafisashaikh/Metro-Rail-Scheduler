@@ -21,6 +21,8 @@ interface PassengerJourneyPlannerProps {
   lines: MetroLine[];
   section: SystemSection;
   onTrainSelect?: (train: Train, sourceStation?: string, destinationStation?: string) => void;
+  isLowBandwidth?: boolean;
+  weatherCondition?: string;
 }
 
 // ─── Skeleton card for low-bandwidth loading state ─────────────────────────────
@@ -97,10 +99,12 @@ function TrainCard({
   train,
   lineColor,
   onClick,
+  isLowBandwidth,
 }: {
   train: Train;
   lineColor: string;
   onClick?: () => void;
+  isLowBandwidth?: boolean;
 }) {
   const statusConfig = {
     'on-time': {
@@ -161,31 +165,33 @@ function TrainCard({
         <CapacityBadge pct={train.capacity.percentage} />
       </div>
 
-      {/* Capacity bar */}
-      <div className="mt-3">
-        <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-700">
-          <div
-            className="h-1.5 rounded-full transition-all"
-            style={{
-              width: `${train.capacity.percentage}%`,
-              background:
-                train.capacity.percentage >= 85
-                  ? '#ef4444'
-                  : train.capacity.percentage >= 60
-                    ? '#f59e0b'
-                    : '#10b981',
-            }}
-          />
+      {/* Capacity bar - HIDDEN in low bandwidth */}
+      {!isLowBandwidth && (
+        <div className="mt-3">
+          <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-700">
+            <div
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: `${train.capacity.percentage}%`,
+                background:
+                  train.capacity.percentage >= 85
+                    ? '#ef4444'
+                    : train.capacity.percentage >= 60
+                      ? '#f59e0b'
+                      : '#10b981',
+              }}
+            />
+          </div>
+          <div className="flex justify-between mt-1">
+            <p className="text-[10px] text-slate-400">
+              {train.capacity.current} / {train.capacity.total} passengers
+            </p>
+            <p className="text-[10px] text-slate-400">
+              {train.capacity.total - train.capacity.current} seats available
+            </p>
+          </div>
         </div>
-        <div className="flex justify-between mt-1">
-          <p className="text-[10px] text-slate-400">
-            {train.capacity.current} / {train.capacity.total} passengers
-          </p>
-          <p className="text-[10px] text-slate-400">
-            {train.capacity.total - train.capacity.current} seats available
-          </p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -197,6 +203,8 @@ export function PassengerJourneyPlanner({
   lines,
   section,
   onTrainSelect,
+  isLowBandwidth,
+  weatherCondition,
 }: PassengerJourneyPlannerProps) {
   const [selectedLine, setSelectedLine] = useState<MetroLine | null>(lines[0] || null);
   const [fromStation, setFromStation] = useState('');
@@ -228,8 +236,8 @@ export function PassengerJourneyPlanner({
 
         const generated =
           section === 'metro'
-            ? generateTrainsForStation(fromStation, selectedLine)
-            : generateRailwayTrains(fromStation, selectedLine);
+            ? generateTrainsForStation(fromStation, selectedLine, weatherCondition)
+            : generateRailwayTrains(fromStation, selectedLine, weatherCondition);
 
         const filteredTrains = generated.filter((train) => {
           const trainIsForward = train.id.includes('-fwd-');
@@ -463,7 +471,7 @@ export function PassengerJourneyPlanner({
       {/* ── Train results ── */}
       {loadState === 'done' && (
         <div className="space-y-4">
-          {selectedLine && (
+          {selectedLine && !isLowBandwidth && (
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden h-64 relative shadow-sm">
               <SatelliteMap
                 line={selectedLine}
@@ -471,6 +479,12 @@ export function PassengerJourneyPlanner({
                 toStation={toStation}
                 trains={visibleTrains}
               />
+            </div>
+          )}
+
+          {isLowBandwidth && (
+            <div className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-center">
+                <p className="text-[10px] text-slate-500 font-medium">Map disabled in Data Saver mode to improve speed.</p>
             </div>
           )}
 
@@ -504,6 +518,7 @@ export function PassengerJourneyPlanner({
                     key={train.id}
                     train={train}
                     lineColor={selectedLine?.color || '#3b82f6'}
+                    isLowBandwidth={isLowBandwidth}
                     onClick={() => {
                       onTrainSelect?.(train, fromStation, toStation);
                     }}

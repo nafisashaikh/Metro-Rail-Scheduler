@@ -43,3 +43,9 @@ export { PredictiveScheduling } from './PredictiveScheduling';
 // ── Passenger ─────────────────────────────────────────────────────────────────
 export { PassengerJourneyPlanner } from './PassengerJourneyPlanner';
 export { MedicalPrescription } from './MedicalPrescription';
+export { PassengerPass } from './PassengerPass';
+export { AiHelpDesk } from './AiHelpDesk';
+export { StationBlueprint } from './StationBlueprint';
+export { EcoStats } from './EcoStats';
+export { StaffTasks } from './StaffTasks';
+export { StaffBroadcast } from './StaffBroadcast';

@@ -10,9 +10,10 @@ interface ScheduleDisplayProps {
   trains: Train[];
   station: string;
   lineColor: string;
+  isLowBandwidth?: boolean;
 }
 
-export function ScheduleDisplay({ trains, station, lineColor }: ScheduleDisplayProps) {
+export function ScheduleDisplay({ trains, station, lineColor, isLowBandwidth }: ScheduleDisplayProps) {
   const [selectedTrain, setSelectedTrain] = useState<Train | null>(null);
 
   const getStatusStyle = (status: Train['status']) => {
@@ -129,18 +130,34 @@ export function ScheduleDisplay({ trains, station, lineColor }: ScheduleDisplayP
                 </div>
 
                 <div className="flex items-center gap-4 mt-2 flex-wrap">
-                  <div className="flex items-center gap-1 text-xs">
-                    <Activity className="w-3 h-3 text-slate-400" />
-                    <span className={getHealthColor(train.health.overall)}>
-                      {train.health.overall}%
-                    </span>
-                  </div>
-                  <div className={`text-xs ${getCapacityColor(train.capacity.percentage)}`}>
-                    {train.capacity.percentage}% full
-                  </div>
+                  {!isLowBandwidth && (
+                    <>
+                      <div className="flex items-center gap-1 text-xs">
+                        <Activity className="w-3 h-3 text-slate-400" />
+                        <span className={getHealthColor(train.health.overall)}>
+                          {train.health.overall}%
+                        </span>
+                      </div>
+                      <div className={`text-xs ${getCapacityColor(train.capacity.percentage)}`}>
+                        {train.capacity.percentage}% full
+                      </div>
+                    </>
+                  )}
                   {prediction.factors.length > 1 && (
                     <div className="text-xs text-amber-600 dark:text-amber-400">
                       ETA {prediction.predictedTime}
+                    </div>
+                  )}
+                  
+                  {/* Crowd Meter */}
+                  {train.crowdLevels && (
+                    <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+                      <p className="text-[10px] text-slate-400 uppercase font-bold mr-1">Load:</p>
+                      <div className="flex gap-0.5 h-3 w-12 rounded-sm overflow-hidden border border-slate-200 dark:border-slate-800">
+                        <div className={`flex-1 ${train.crowdLevels.front === 'high' ? 'bg-red-500' : train.crowdLevels.front === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'}`} title="Front" />
+                        <div className={`flex-1 ${train.crowdLevels.middle === 'high' ? 'bg-red-500' : train.crowdLevels.middle === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'}`} title="Middle" />
+                        <div className={`flex-1 ${train.crowdLevels.rear === 'high' ? 'bg-red-500' : train.crowdLevels.rear === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'}`} title="Rear" />
+                      </div>
                     </div>
                   )}
                 </div>

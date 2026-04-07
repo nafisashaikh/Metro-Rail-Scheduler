@@ -84,6 +84,7 @@ export default function App() {
   // ── Shared state ──────────────────────────────────────────────────────────
   const [alerts, setAlerts] = useState<Alert[]>(seedAlerts);
   const [isDark, setIsDark] = useState(false);
+  const [lang, setLang] = useState<string>('en');
   const [isRestoringSession, setIsRestoringSession] = useState(true);
 
   // ── Effects ───────────────────────────────────────────────────────────────
@@ -271,6 +272,8 @@ export default function App() {
             weather={getWeatherForSection(staffSection)}
             onOpenAlerts={() => setShowAlerts((s) => !s)}
             onSwitchPortal={handleSwitchPortal}
+            lang={lang}
+            onLangChange={setLang}
           />
 
           {/* ── Critical-alert banner ── */}
@@ -336,6 +339,7 @@ export default function App() {
               isDark={isDark}
               showAlerts={showAlerts}
               onCloseAlerts={() => setShowAlerts(false)}
+              lang={lang}
             />
           </main>
 
@@ -396,6 +400,18 @@ export default function App() {
             onLogout={handlePassengerLogout}
             onSwitchPortal={handleSwitchPortal}
             weather={getWeatherForSection(passengerSection)}
+            lang={lang}
+            onLangChange={setLang}
+            onEmergencyAlert={() => {
+              handleAddAlert({
+                type: 'medical',
+                severity: 'critical',
+                title: 'PASSENGER SOS',
+                message: `Emergency alert from ${passengerUser?.name} (${passengerUser?.cardNumber || passengerUser?.id}). Assitance required immediately.`,
+                section: passengerSection,
+                station: 'Live App'
+              });
+            }}
           />
 
           {/* ── Live announcement ticker ── */}
@@ -411,10 +427,12 @@ export default function App() {
               onResolveAlert={() => {}} // read-only for passengers
               onAddAlert={() => {}} // read-only for passengers
               userRole="passenger"
+              passengerUser={passengerUser}
               weather={getWeatherForSection(passengerSection)}
               isDark={isDark}
               showAlerts={false}
               onCloseAlerts={() => {}}
+              lang={lang}
             />
           </main>
 

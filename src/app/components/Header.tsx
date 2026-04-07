@@ -28,6 +28,8 @@ interface HeaderProps {
   weather: WeatherData;
   onOpenAlerts: () => void;
   onSwitchPortal?: () => void;
+  lang: string;
+  onLangChange: (l: string) => void;
 }
 
 const roleConfig = {
@@ -48,6 +50,8 @@ export function Header({
   weather,
   onOpenAlerts,
   onSwitchPortal,
+  lang,
+  onLangChange,
 }: HeaderProps) {
   const activeAlerts = alerts.filter((a) => !a.resolved);
   const criticalAlerts = activeAlerts.filter((a) => a.severity === 'critical');
@@ -112,6 +116,23 @@ export function Header({
 
         {/* Weather compact */}
         <WeatherWidget weather={weather} compact />
+
+        {/* Language Switcher */}
+        <div className="flex p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+          {(['en', 'hi', 'mr'] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => onLangChange(l)}
+              className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${
+                lang === l 
+                  ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' 
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
 
         {/* Dark mode toggle */}
         <button
@@ -267,6 +288,9 @@ interface PassengerHeaderProps {
   onLogout: () => void;
   onSwitchPortal: () => void;
   weather: WeatherData;
+  onEmergencyAlert?: () => void;
+  lang: string;
+  onLangChange: (l: string) => void;
 }
 
 export function PassengerHeader({
@@ -278,6 +302,9 @@ export function PassengerHeader({
   onLogout,
   onSwitchPortal,
   weather,
+  onEmergencyAlert,
+  lang,
+  onLangChange,
 }: PassengerHeaderProps) {
   const [showUser, setShowUser] = useState(false);
 
@@ -323,6 +350,36 @@ export function PassengerHeader({
         <div className="flex-1" />
 
         <WeatherWidget weather={weather} compact />
+
+        {/* Language Switcher */}
+        <div className="flex p-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+          {(['en', 'hi', 'mr'] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => onLangChange(l)}
+              className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${
+                lang === l 
+                  ? 'bg-white dark:bg-slate-600 text-orange-600 dark:text-orange-300 shadow-sm' 
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* SOS Emergency Button */}
+        <button
+          onClick={() => {
+            if (window.confirm("Are you sure you want to send a MEDICAL EMERGENCY alert? This will notify metro staff immediately.")) {
+              onEmergencyAlert?.();
+            }
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20 transition-all font-bold text-xs"
+        >
+          <Bell className="w-3.5 h-3.5 animate-bounce" />
+          SOS
+        </button>
 
         <button
           onClick={onToggleDark}

@@ -27,6 +27,23 @@ export default defineConfig({
   // Raw asset imports allowed for these extensions (never add .css / .tsx / .ts here)
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4001',
+        changeOrigin: true,
+      },
+      '/auth': {
+        target: 'http://localhost:4001',
+        changeOrigin: true,
+      },
+      '/realtime': {
+        target: 'http://localhost:4001',
+        changeOrigin: true,
+      },
+    },
+  },
+
   build: {
     target: 'ES2020',
     sourcemap: true,

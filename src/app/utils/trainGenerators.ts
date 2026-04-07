@@ -1,4 +1,4 @@
-import { TrainHealth, TrainCapacity } from '../types/metro';
+import { Train, TrainHealth, TrainCapacity } from '../types/metro';
 
 export const generateTrainHealth = (): TrainHealth => {
   const engine = 72 + Math.random() * 28;
@@ -63,4 +63,27 @@ export const generateDepartureTimes = (startHour = 5, endHour = 23, interval = 1
     }
   }
   return times;
+};
+export const generateCrowdLevels = (percentage: number): NonNullable<Train['crowdLevels']> => {
+  const getLevel = (base: number) => {
+    const val = base + (Math.random() * 20 - 10);
+    if (val > 80) return 'high';
+    if (val > 40) return 'medium';
+    return 'low';
+  };
+
+  return {
+    front: getLevel(percentage - 5),
+    middle: getLevel(percentage + 10),
+    rear: getLevel(percentage - 5),
+  };
+};
+
+export const generateStationFacilities = (): NonNullable<import('../types/metro').StationMetrics['facilities']> => {
+  return {
+    atm: Math.random() > 0.1 ? 'operational' : 'out-of-order',
+    toilet: Math.random() > 0.05 ? 'operational' : 'out-of-order',
+    parking: Math.random() > 0.7 ? 'full' : Math.random() > 0.3 ? 'available' : 'none',
+    drinkingWater: Math.random() > 0.15 ? 'operational' : 'out-of-order',
+  };
 };
