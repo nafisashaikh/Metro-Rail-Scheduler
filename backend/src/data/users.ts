@@ -2,6 +2,7 @@ import { AuthUser, UserRole } from '../types/auth.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { exportUsersToExcel } from '../utils/excel.js';
 
 interface StoredUser extends AuthUser {
   identifier: string;
@@ -102,6 +103,9 @@ function saveUsersToDisk(users: StoredUser[]): void {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
   fs.writeFileSync(USERS_DB_PATH, JSON.stringify(users, null, 2), 'utf-8');
+  
+  // Also export to Excel for external tracking
+  exportUsersToExcel(users);
 }
 
 const USERS: StoredUser[] = loadUsersFromDisk();
