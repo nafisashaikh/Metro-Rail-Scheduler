@@ -42,7 +42,7 @@ export function useAiChat(options: UseAiChatOptions = {}) {
 
     try {
       // Try real AI API first (if enabled)
-      if (options.useRealAi !== false) {
+      if (options.useRealAi === true) {
         const aiResponse = await fetchAiResponse(userInput, messages, options.context);
         if (aiResponse) {
           const botMsg: ChatMessage = {

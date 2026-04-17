@@ -22,7 +22,7 @@ export function AiHelpDesk({ context, useRealAi = false }: AiHelpDeskProps) {
       // Send initial greeting
       sendMessage('Hello');
     }
-  }, []);
+  }, [messages.length, sendMessage]);
 
   // Auto-scroll to latest message
   useEffect(() => {
