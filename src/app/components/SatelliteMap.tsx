@@ -19,6 +19,13 @@ interface TrainDetailPanel {
   nextStation: string;
 }
 
+interface LeafletContainerElement extends HTMLDivElement {
+  _leaflet_id?: number;
+}
+
+const normalizeStationName = (value: string): string =>
+  value.toLowerCase().replace(/[^a-z0-9]/g, '');
+
 export function SatelliteMap({
   line,
   selectedStation,
@@ -30,9 +37,20 @@ export function SatelliteMap({
   const [isSatellite, setIsSatellite] = useState(false);
   const [activePanel, setActivePanel] = useState<TrainDetailPanel | null>(null);
 
-  // Slice coords to journey segment when from+to given
+  // Keep map coordinates aligned to the canonical station order.
   const coords = useMemo(() => {
-    let base = line.stationCoords || [];
+    const coordByName = new Map(
+      (line.stationCoords || []).map((coord) => [normalizeStationName(coord.name), coord])
+    );
+
+    let base = line.stations
+      .map((stationName) => coordByName.get(normalizeStationName(stationName)))
+      .filter((coord): coord is MetroLine['stationCoords'][number] => Boolean(coord));
+
+    if (base.length === 0) {
+      base = line.stationCoords || [];
+    }
+
     if (fromStation && toStation) {
       const idx1 = line.stations.indexOf(fromStation);
       const idx2 = line.stations.indexOf(toStation);
@@ -85,14 +103,20 @@ export function SatelliteMap({
 
   // Init once
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    const container = containerRef.current as LeafletContainerElement | null;
+    if (!container || mapRef.current) return;
+
+    // Guard against stale Leaflet instance ids when React remounts quickly.
+    if (container._leaflet_id !== undefined) {
+      delete container._leaflet_id;
+    }
 
     const center: [number, number] =
       stationPoints.length > 0
         ? stationPoints[Math.floor(stationPoints.length / 2)]
         : [19.076, 72.877];
 
-    mapRef.current = L.map(containerRef.current, { zoomControl: false }).setView(center, 11);
+    mapRef.current = L.map(container, { zoomControl: false }).setView(center, 11);
 
     const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap',
@@ -109,8 +133,19 @@ export function SatelliteMap({
     L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
 
     return () => {
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current.clear();
+      stationMarkersRef.current.forEach((marker) => marker.remove());
+      stationMarkersRef.current = [];
+      if (polylineRef.current) {
+        polylineRef.current.remove();
+        polylineRef.current = null;
+      }
+
       mapRef.current?.remove();
       mapRef.current = null;
+      streetLayerRef.current = null;
+      satelliteLayerRef.current = null;
     };
   }, []);
 

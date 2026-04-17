@@ -41,7 +41,7 @@ Default server: `http://localhost:4000`
   {
     "role": "admin",
     "identifier": "MRS-A-001",
-    "password": "admin123"
+      "password": "<your-password>"
   }
   ```
 - Returns: JWT token and sanitized user profile
@@ -54,7 +54,7 @@ Default server: `http://localhost:4000`
    {
       "name": "New Passenger",
       "username": "newuser123",
-      "password": "pass9876"
+      "password": "Str0ng#Pass123"
    }
    ```
 - Returns: JWT token and created passenger profile

@@ -86,7 +86,17 @@ const STAFF_TABS = [
 ] as const;
 
 // Passenger tabs — full feature set including Medical
-const getPassengerTabs = (t: any) => [
+interface PassengerTabLabels {
+  journey: string;
+  pass: string;
+  map: string;
+  guide: string;
+  alerts: string;
+  medical: string;
+  support: string;
+}
+
+const getPassengerTabs = (t: PassengerTabLabels) => [
   { id: 'journey', icon: MapPin, label: t.journey },
   { id: 'pass', icon: QrCode, label: t.pass },
   { id: 'map', icon: Map, label: t.map },
@@ -444,7 +454,7 @@ export function DashboardSection({
                 <div className="h-full flex flex-col items-center justify-center py-20 text-center">
                   <ZapOff className="w-12 h-12 mb-4 text-slate-300" />
                   <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Map restricted in Lite Mode</h3>
-                  <p className="text-xs text-slate-500 max-w-xs mt-1">Downloading station blueprints requires high bandwidth. Please switch to 'Full Mode' to view the map.</p>
+                  <p className="text-xs text-slate-500 max-w-xs mt-1">Downloading station blueprints requires high bandwidth. Please switch to &apos;Full Mode&apos; to view the map.</p>
                   <button
                     onClick={toggleDataSaver}
                     className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-bold"

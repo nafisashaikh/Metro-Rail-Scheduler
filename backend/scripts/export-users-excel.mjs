@@ -10,15 +10,6 @@ const __dirname = path.dirname(__filename);
 const DATA_PATH = path.resolve(__dirname, '../data/users.json');
 const OUTPUT_PATH = path.resolve(__dirname, '../data/users_export.xlsx');
 
-// Default users (passwords in plaintext for reference)
-const DEFAULT_PLAIN_PASSWORDS = {
-  'MRS-A-001': 'Admin@1234',
-  'MRS-S-042': 'Super@1234',
-  'MRS-E-187': 'Empl@1234',
-  'user001':   'pass123',
-  'user002':   'metro2024',
-};
-
 let users = [];
 
 if (fs.existsSync(DATA_PATH)) {
@@ -38,7 +29,7 @@ const rows = users.map((user) => ({
   'Username / Employee ID': user.username || user.employeeId || user.identifier,
   'Card Number':  user.cardNumber || '—',
   'Department':   user.department || '—',
-  'Password (Plain)': DEFAULT_PLAIN_PASSWORDS[user.identifier] || '(encrypted - set during signup)',
+  'Password Storage': 'Hashed (scrypt + salt)',
   'Login Identifier': user.identifier,
 }));
 

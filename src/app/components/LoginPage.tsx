@@ -10,10 +10,9 @@ interface LoginPageProps {
   onBack?: () => void;
 }
 
-const DEMO_USERS: { role: StaffRole; user: User; password: string }[] = [
+const DEMO_USERS: { role: StaffRole; user: User }[] = [
   {
     role: 'admin',
-    password: 'admin123',
     user: {
       id: '1',
       name: 'Rajesh Kumar',
@@ -24,7 +23,6 @@ const DEMO_USERS: { role: StaffRole; user: User; password: string }[] = [
   },
   {
     role: 'supervisor',
-    password: 'super123',
     user: {
       id: '2',
       name: 'Priya Sharma',
@@ -35,7 +33,6 @@ const DEMO_USERS: { role: StaffRole; user: User; password: string }[] = [
   },
   {
     role: 'employee',
-    password: 'emp123',
     user: {
       id: '3',
       name: 'Amit Patil',
@@ -200,12 +197,10 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
         {/* Demo Hints (only visible in dev) */}
         {window.location.hostname === 'localhost' && (
           <div className="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-            <p className="text-xs text-slate-400 mb-2">Demo Credentials</p>
+            <p className="text-xs text-slate-400 mb-2">Demo Staff IDs</p>
             <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-slate-500">
               {DEMO_USERS.map((u) => (
-                <span key={u.role}>
-                  {u.user.employeeId} : {u.password}
-                </span>
+                <span key={u.role}>{u.user.employeeId}</span>
               ))}
             </div>
           </div>

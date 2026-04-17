@@ -267,9 +267,17 @@ export function PassengerJourneyPlanner({
             ? generateTrainsForStation(fromStation, selectedLine, weatherCondition)
             : generateRailwayTrains(fromStation, selectedLine, weatherCondition);
 
+        const destinationIndex = selectedLine.stations.indexOf(toStation);
         const filteredTrains = generated.filter((train) => {
-          const trainIsForward = train.id.includes('-fwd-');
-          return trainIsForward === isForward;
+          const trainDestinationIndex = selectedLine.stations.indexOf(train.destination);
+          if (trainDestinationIndex === -1 || destinationIndex === -1) {
+            return false;
+          }
+
+          // Keep only trains that move from source toward the selected destination.
+          return isForward
+            ? trainDestinationIndex >= destinationIndex
+            : trainDestinationIndex <= destinationIndex;
         });
 
         setTrains(filteredTrains);

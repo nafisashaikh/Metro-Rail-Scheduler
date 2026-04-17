@@ -50,9 +50,9 @@ const CrowdingInsightsPanel: React.FC<CrowdingInsightsPanelProps> = ({
         setArrivals(data.arrivals || []);
         setLastUpdated(new Date());
 
-      } catch (err: any) {
-        console.error('Failed to fetch crowding data:', err);
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unable to fetch crowding data.';
+        setError(message);
         
         // Mock data fallback with enhanced crowding simulation
         const mockArrivals = generateMockCrowdingData();

@@ -9,9 +9,9 @@ interface PassengerLoginPageProps {
   onSwitchToSignup: () => void;
 }
 
-const DEMO_CREDS = [
-  { username: 'user001', password: 'pass123', label: 'Regular Commuter' },
-  { username: 'user002', password: 'metro2024', label: 'Frequent Traveler' },
+const DEMO_USERS = [
+  { username: 'user001', label: 'Regular Commuter' },
+  { username: 'user002', label: 'Frequent Traveler' },
 ];
 
 export function PassengerLoginPage({ onLogin, onBack, onSwitchToSignup }: PassengerLoginPageProps) {
@@ -82,7 +82,7 @@ export function PassengerLoginPage({ onLogin, onBack, onSwitchToSignup }: Passen
         {/* Security badge */}
         <div className="flex items-center justify-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-8">
           <Shield className="w-3.5 h-3.5" />
-          SHA-256 Encrypted Login
+          Secure password hashing enabled
         </div>
 
         {/* Inputs */}
@@ -147,11 +147,11 @@ export function PassengerLoginPage({ onLogin, onBack, onSwitchToSignup }: Passen
 
         {/* Demo Hints */}
         <div className="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-          <p className="text-xs text-slate-400 mb-2">Demo Credentials</p>
+          <p className="text-xs text-slate-400 mb-2">Demo Usernames</p>
           <div className="flex flex-wrap justify-center gap-4 text-xs font-mono text-slate-500">
-            {DEMO_CREDS.map((c) => (
+            {DEMO_USERS.map((c) => (
               <span key={c.username}>
-                {c.username} : {c.password}
+                {c.username}
               </span>
             ))}
           </div>

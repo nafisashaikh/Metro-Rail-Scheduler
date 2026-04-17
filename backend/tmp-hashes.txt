@@ -1,10 +1,2 @@
-ADMIN   salt: 5606107fe0432b510f19e52628f35eb4 
-        hash: e23a8d6a91de3b60288023c528489fe5d304f113de40d3c663edbca27919d4fba2a7a8984cb883155245993159bcd029d60097cd1a82c1cdae3832ed3a5b8efd
-SUPER   salt: 18ac060f7574e26f6947384a99c1b3d9 
-        hash: 657d729c223f04e8d6388aa6b0cdfea1b43f951b32896da15e033fc0ff13f8e72597a55c153820dee20ae4c729f72a58767a60cda21d851f4bb748af345acf9c
-EMPL    salt: 7f444f8db3f3dcf8585df0ecbeba9e4f 
-        hash: a7c1a62dddd5db68b89c55d056dbe13e5d97e443e159ba53e80c68ea11c1647ff98f8c9dd615ef11d7e5fd20984fe3b549e12b54a42fee06b6dc23d1941c2b93
-PASS123 salt: db51f8c282ceeb470d675c999f6ac563 
-        hash: 42257b39f70351bc52259321fed60962e84ac42cd68bbfd4e19ad3cc27173d66995d2f52c9b0f9dc6ce8a65d8c18f9b8518111b2bf27708e8c5433b57245468b
-METRO24 salt: fca576660f6d4199945278bb1164229e 
-        hash: afe5975e5ca3cf545159955113531fb700b28c7cdf7f9f79185d6e87891f71a6bdf5a44bef09f614e5f2c5af73fee6e07c399fb38b11d065ec7d84e6141f8e9d
+This file intentionally avoids storing any password samples or labeled credential hashes.
+Use backend/scripts/gen-hashes.mjs with explicit CLI input when test hashes are needed.

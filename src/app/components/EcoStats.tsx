@@ -56,7 +56,7 @@ export function EcoStats() {
 
       <div className="mt-4 p-2.5 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-emerald-50/50 dark:border-emerald-900/10">
         <p className="text-[10px] text-slate-600 dark:text-slate-400 text-center italic">
-            "By choosing Metro over a car today, you've saved as much CO2 as two fully grown Mangrove trees absorb in a month!"
+          &quot;By choosing Metro over a car today, you&apos;ve saved as much CO2 as two fully grown Mangrove trees absorb in a month!&quot;
         </p>
       </div>
     </div>

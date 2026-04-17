@@ -17,7 +17,7 @@ interface UseOfflineModeReturn extends OfflineData {
   registerServiceWorker: () => Promise<boolean>;
   clearCache: () => Promise<boolean>;
   getCacheInfo: () => Promise<CacheInfo>;
-  cacheScheduleData: (data: any) => Promise<boolean>;
+  cacheScheduleData: (data: unknown) => Promise<boolean>;
   isDataStale: (timestamp: number, maxAge?: number) => boolean;
 }
 
@@ -39,7 +39,6 @@ const useOfflineMode = (): UseOfflineModeReturn => {
         isOnline: true,
         lastOnline: new Date()
       }));
-      console.log('[Offline] Back online');
     };
 
     const handleOffline = () => {
@@ -47,7 +46,6 @@ const useOfflineMode = (): UseOfflineModeReturn => {
         ...prev,
         isOnline: false
       }));
-      console.log('[Offline] Gone offline');
     };
 
     window.addEventListener('online', handleOnline);
@@ -62,13 +60,11 @@ const useOfflineMode = (): UseOfflineModeReturn => {
   // Register service worker
   const registerServiceWorker = useCallback(async (): Promise<boolean> => {
     if (!offlineData.isServiceWorkerSupported) {
-      console.warn('[Offline] Service Worker not supported');
       return false;
     }
 
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('[Offline] Service Worker registered:', registration);
       
       setOfflineData(prev => ({
         ...prev,
@@ -78,19 +74,16 @@ const useOfflineMode = (): UseOfflineModeReturn => {
       // Listen for SW updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
-        console.log('[Offline] New Service Worker installing');
         
         newWorker?.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('[Offline] New Service Worker installed, refresh recommended');
             // Could show update notification here
           }
         });
       });
 
       return true;
-    } catch (error) {
-      console.error('[Offline] Service Worker registration failed:', error);
+    } catch {
       return false;
     }
   }, [offlineData.isServiceWorkerSupported]);
@@ -98,7 +91,6 @@ const useOfflineMode = (): UseOfflineModeReturn => {
   // Clear all caches
   const clearCache = useCallback(async (): Promise<boolean> => {
     if (!navigator.serviceWorker.controller) {
-      console.warn('[Offline] No active service worker');
       return false;
     }
 
@@ -122,12 +114,10 @@ const useOfflineMode = (): UseOfflineModeReturn => {
           cacheInfo: null,
           cacheSize: 0
         }));
-        console.log('[Offline] Cache cleared successfully');
       }
 
       return response;
-    } catch (error) {
-      console.error('[Offline] Failed to clear cache:', error);
+    } catch {
       return false;
     }
   }, []);
@@ -161,16 +151,14 @@ const useOfflineMode = (): UseOfflineModeReturn => {
       }));
 
       return cacheInfo;
-    } catch (error) {
-      console.error('[Offline] Failed to get cache info:', error);
+    } catch {
       return {};
     }
   }, []);
 
   // Cache schedule data
-  const cacheScheduleData = useCallback(async (data: any): Promise<boolean> => {
+  const cacheScheduleData = useCallback(async (data: unknown): Promise<boolean> => {
     if (!navigator.serviceWorker.controller) {
-      console.warn('[Offline] No active service worker');
       return false;
     }
 
@@ -188,13 +176,8 @@ const useOfflineMode = (): UseOfflineModeReturn => {
         );
       });
 
-      if (response) {
-        console.log('[Offline] Schedule data cached');
-      }
-
       return response;
-    } catch (error) {
-      console.error('[Offline] Failed to cache schedule data:', error);
+    } catch {
       return false;
     }
   }, []);

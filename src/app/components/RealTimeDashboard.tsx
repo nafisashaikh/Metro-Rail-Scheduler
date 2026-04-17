@@ -389,7 +389,7 @@ const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
           <div className="flex items-center gap-2">
             <WifiOff className="h-5 w-5 text-yellow-600" />
             <span className="text-yellow-800 font-medium">
-              You're offline - showing last cached data
+              You&apos;re offline - showing last cached data
             </span>
           </div>
         </div>
