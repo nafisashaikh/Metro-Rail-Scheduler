@@ -139,18 +139,9 @@ export function AiHelpDesk({ context, useRealAi = false }: AiHelpDeskProps) {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-slate-200 dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none flex gap-1 items-center">
-                  <span
-                    className="w-1 h-1 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
-                    style={{ animationDelay: '0ms' }}
-                  />
-                  <span
-                    className="w-1 h-1 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
-                    style={{ animationDelay: '150ms' }}
-                  />
-                  <span
-                    className="w-1 h-1 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"
-                    style={{ animationDelay: '300ms' }}
-                  />
+                  <span className="w-1 h-1 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1 h-1 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1 h-1 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:300ms]" />
                 </div>
               </div>
             )}
@@ -215,6 +206,8 @@ export function AiHelpDesk({ context, useRealAi = false }: AiHelpDeskProps) {
           <button
             type="submit"
             disabled={isLoading}
+            title="Send message"
+            aria-label="Send message"
             className="p-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 disabled:cursor-not-allowed text-white rounded-xl transition-all shadow-lg shadow-blue-500/20"
           >
             <Send className="w-4 h-4" />

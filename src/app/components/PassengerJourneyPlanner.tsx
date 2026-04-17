@@ -33,13 +33,7 @@ function SkeletonTrainCard() {
       aria-hidden="true"
     >
       <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(90deg, transparent 0%, rgba(148,163,184,0.08) 50%, transparent 100%)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmer 1.5s infinite',
-        }}
+        className="absolute inset-0 animate-pulse bg-slate-200/20 dark:bg-slate-700/20"
       />
       <div className="flex items-center justify-between">
         <div className="space-y-2 flex-1">
@@ -49,12 +43,6 @@ function SkeletonTrainCard() {
         <div className="h-6 w-16 rounded-full bg-slate-200 dark:bg-slate-700" />
       </div>
       <div className="mt-3 h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-700 opacity-40" />
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -85,8 +73,7 @@ function CapacityBadge({ pct }: { pct: number }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${config.bg} ${config.color}`}
-      style={{ fontWeight: 600 }}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.color}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
       {config.label} · {pct}%
@@ -97,12 +84,10 @@ function CapacityBadge({ pct }: { pct: number }) {
 // ─── Train card ────────────────────────────────────────────────────────────────
 function TrainCard({
   train,
-  lineColor,
   onClick,
   isLowBandwidth,
 }: {
   train: Train;
-  lineColor: string;
   onClick?: () => void;
   isLowBandwidth?: boolean;
 }) {
@@ -124,6 +109,26 @@ function TrainCard({
     },
   }[train.status];
 
+  const capacityWidthClass =
+    train.capacity.percentage >= 90
+      ? 'w-full'
+      : train.capacity.percentage >= 75
+        ? 'w-4/5'
+        : train.capacity.percentage >= 60
+          ? 'w-3/5'
+          : train.capacity.percentage >= 40
+            ? 'w-2/5'
+            : train.capacity.percentage >= 20
+              ? 'w-1/5'
+              : 'w-[10%]';
+
+  const capacityToneClass =
+    train.capacity.percentage >= 85
+      ? 'bg-red-500'
+      : train.capacity.percentage >= 60
+        ? 'bg-amber-500'
+        : 'bg-emerald-500';
+
   return (
     <div
       onClick={onClick}
@@ -136,19 +141,13 @@ function TrainCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           {/* Color strip */}
-          <div
-            className="w-1 h-10 rounded-full flex-shrink-0 mt-0.5"
-            style={{ background: lineColor }}
-          />
+          <div className="w-1 h-10 rounded-full flex-shrink-0 mt-0.5 bg-orange-500" />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-0.5">
-              <p className="text-lg text-slate-900 dark:text-white" style={{ fontWeight: 700 }}>
+              <p className="text-lg text-slate-900 dark:text-white font-bold">
                 {train.departureTime}
               </p>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${statusConfig.bg} ${statusConfig.color}`}
-                style={{ fontWeight: 600 }}
-              >
+              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${statusConfig.bg} ${statusConfig.color}`}>
                 {statusConfig.label}
               </span>
             </div>
@@ -169,18 +168,7 @@ function TrainCard({
       {!isLowBandwidth && (
         <div className="mt-3">
           <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-700">
-            <div
-              className="h-1.5 rounded-full transition-all"
-              style={{
-                width: `${train.capacity.percentage}%`,
-                background:
-                  train.capacity.percentage >= 85
-                    ? '#ef4444'
-                    : train.capacity.percentage >= 60
-                      ? '#f59e0b'
-                      : '#10b981',
-              }}
-            />
+            <div className={`h-1.5 rounded-full transition-all ${capacityWidthClass} ${capacityToneClass}`} />
           </div>
           <div className="flex justify-between mt-1">
             <p className="text-[10px] text-slate-400">
@@ -311,7 +299,7 @@ export function PassengerJourneyPlanner({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-slate-900 dark:text-white text-base" style={{ fontWeight: 700 }}>
+          <h3 className="text-slate-900 dark:text-white text-base font-bold">
             Journey Planner
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -334,10 +322,7 @@ export function PassengerJourneyPlanner({
 
       {/* Line selector */}
       <div>
-        <label
-          className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block"
-          style={{ fontWeight: 600 }}
-        >
+        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block font-semibold">
           SELECT LINE
         </label>
         <div className="flex gap-2 flex-wrap">
@@ -353,13 +338,9 @@ export function PassengerJourneyPlanner({
               }}
               className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${
                 selectedLine?.id === line.id
-                  ? 'border-transparent text-white shadow-sm'
-                  : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                  ? 'border-orange-500 bg-orange-500 text-white shadow-sm font-bold'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 font-normal'
               }`}
-              style={{
-                fontWeight: selectedLine?.id === line.id ? 700 : 400,
-                background: selectedLine?.id === line.id ? line.color : undefined,
-              }}
             >
               {line.name}
             </button>
@@ -372,15 +353,13 @@ export function PassengerJourneyPlanner({
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
           {/* From */}
           <div className="flex-1">
-            <label
-              className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block"
-              style={{ fontWeight: 600 }}
-            >
+            <label className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block font-semibold">
               FROM STATION
             </label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <select
+                title="From station"
                 value={fromStation}
                 onChange={(e) => {
                   setFromStation(e.target.value);
@@ -413,15 +392,13 @@ export function PassengerJourneyPlanner({
 
           {/* To */}
           <div className="flex-1">
-            <label
-              className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block"
-              style={{ fontWeight: 600 }}
-            >
+            <label className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block font-semibold">
               TO STATION
             </label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <select
+                title="To station"
                 value={toStation}
                 onChange={(e) => setToStation(e.target.value)}
                 disabled={!fromStation}
@@ -442,11 +419,7 @@ export function PassengerJourneyPlanner({
           <button
             onClick={handleSearch}
             disabled={!fromStation || !toStation || loadState === 'loading'}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, rgb(249,115,22), rgb(225,29,72)',
-              fontWeight: 600,
-            }}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 bg-gradient-to-r from-orange-500 to-rose-600 font-semibold"
           >
             {loadState === 'loading' ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -476,7 +449,7 @@ export function PassengerJourneyPlanner({
       {loadState === 'offline' && (
         <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-6 text-center">
           <WifiOff className="w-10 h-10 mx-auto text-amber-500 mb-3 opacity-70" />
-          <p className="text-sm text-amber-700 dark:text-amber-300" style={{ fontWeight: 600 }}>
+          <p className="text-sm text-amber-700 dark:text-amber-300 font-semibold">
             No connection detected
           </p>
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
@@ -484,8 +457,7 @@ export function PassengerJourneyPlanner({
           </p>
           <button
             onClick={handleSearch}
-            className="mt-4 px-4 py-2 rounded-lg bg-amber-500 text-white text-xs hover:bg-amber-600 transition-colors"
-            style={{ fontWeight: 600 }}
+            className="mt-4 px-4 py-2 rounded-lg bg-amber-500 text-white text-xs hover:bg-amber-600 transition-colors font-semibold"
           >
             Retry
           </button>
@@ -496,7 +468,7 @@ export function PassengerJourneyPlanner({
       {loadState === 'idle' && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-10 flex flex-col items-center text-center">
           <TrainIcon className="w-14 h-14 text-slate-300 dark:text-slate-600 mb-3" />
-          <p className="text-sm text-slate-500 dark:text-slate-400" style={{ fontWeight: 500 }}>
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
             Select a line, choose your stations, then tap Search
           </p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
@@ -530,7 +502,7 @@ export function PassengerJourneyPlanner({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                 <TrainIcon className="w-4 h-4" />
-                <span style={{ fontWeight: 600 }}>{trains.length} trains</span>
+                <span className="font-semibold">{trains.length} trains</span>
                 <span>from {fromStation}</span>
                 <ChevronRight className="w-3 h-3" />
                 <span>{toStation}</span>
@@ -554,7 +526,6 @@ export function PassengerJourneyPlanner({
                   <TrainCard
                     key={train.id}
                     train={train}
-                    lineColor={selectedLine?.color || '#3b82f6'}
                     isLowBandwidth={isLowBandwidth}
                     onClick={() => {
                       onTrainSelect?.(train, fromStation, toStation);

@@ -147,6 +147,8 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
                 type="text"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
+                title="Employee ID"
+                placeholder="MRS-A-001"
                 className="w-full pl-10 pr-4 py-3 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-black dark:focus:border-white outline-none transition-colors text-sm font-medium"
               />
             </div>

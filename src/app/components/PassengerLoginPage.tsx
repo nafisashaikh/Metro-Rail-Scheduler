@@ -97,6 +97,8 @@ export function PassengerLoginPage({ onLogin, onBack, onSwitchToSignup }: Passen
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                title="Username or Email"
+                placeholder="user001 or name@example.com"
                 className="w-full pl-10 pr-4 py-3 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-orange-600 dark:focus:border-white outline-none transition-colors text-sm font-medium"
                 autoComplete="username"
               />
@@ -114,6 +116,8 @@ export function PassengerLoginPage({ onLogin, onBack, onSwitchToSignup }: Passen
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                title="Password"
+                placeholder="Enter your password"
                 className="w-full pl-10 pr-10 py-3 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-orange-600 dark:focus:border-white outline-none transition-colors text-sm font-medium"
                 autoComplete="current-password"
               />
