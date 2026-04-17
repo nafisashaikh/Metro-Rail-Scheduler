@@ -79,9 +79,7 @@ router.post('/route-status', (req, res) => {
   }
 });
 
-export { router as realtimeRouter };
-
-// Get crowding predictions for next few trains  
+// Get crowding predictions for next few trains
 router.get('/crowding/:stationId', (req, res) => {
   try {
     const { stationId } = req.params;
@@ -114,3 +112,5 @@ router.get('/crowding/:stationId', (req, res) => {
     res.status(500).json({ error: 'Failed to fetch crowding data' });
   }
 });
+
+export { router as realtimeRouter };

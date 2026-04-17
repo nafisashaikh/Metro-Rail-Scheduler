@@ -174,18 +174,27 @@ class RealGtfsService {
     // Process London TfL data as example real-time feed
     if (londonData.length > 0) {
       londonData.forEach((arrival, index) => {
-        const arrivalTime = Date.now() + (arrival.timeToStation * 1000);
-        
+        const secondsToArrival = arrival.timeToStation ?? 0;
+        // TfL provides `timeToStation` (actual) but no published scheduled time
+        // in this lightweight endpoint. Use the nominal headway (5 min = 300s) as
+        // the scheduled baseline so delays are meaningful for demo purposes.
+        const scheduledSeconds = Math.min(secondsToArrival, 300);
+        const delaySeconds = Math.max(0, secondsToArrival - scheduledSeconds);
+        const delayMinutes = Math.round(delaySeconds / 60);
+
         realtimeCache.vehiclePositions.set(`london-${index}`, {
           id: `london-${index}`,
           lineId: 'central-line',
           lineName: arrival.lineName || 'Central Line',
           destination: arrival.destinationName,
-          arrivalTime: arrivalTime,
-          delay: Math.max(0, arrival.timeToStation - arrival.timeToStation), // Simplified
+          arrivalTime: Date.now() + (secondsToArrival * 1000),
+          delay: delayMinutes,
           platform: arrival.platformName,
           vehicleId: arrival.vehicleId,
-          occupancyStatus: 'MANY_SEATS_AVAILABLE' // Default
+          occupancyStatus: 'MANY_SEATS_AVAILABLE',
+          // Mark all cached London vehicles as serving common Mumbai demo stations
+          // so isVehicleApproachingStation() produces results for any station.
+          stopId: 'andheri',
         });
       });
     }
@@ -236,14 +245,27 @@ class RealGtfsService {
   }
 
   isVehicleApproachingStation(vehicle: any, stationId: string): boolean {
-    // Simplified logic - in real GTFS you'd check:
-    // 1. Vehicle's current trip_id
-    // 2. stop_times.txt for this trip  
-    // 3. Check if stationId is in upcoming stops
-    
-    // For demo, assume vehicles serve common stations
-    const commonStations = ['ameerpet', 'begumpet', 'rasoolpura', 'jubileehills'];
-    return commonStations.includes(stationId);
+    // Normalize the requested station name the same way we normalize vehicle data.
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const target = normalize(stationId);
+
+    // If the vehicle carries explicit stop information, use it.
+    if (vehicle.stopId) {
+      return normalize(vehicle.stopId) === target;
+    }
+
+    // Fallback: any of our known Mumbai metro/railway station slugs are valid.
+    // This ensures demo data from TfL/Berlin still yields some arrivals rather than none.
+    const mumbaiStations = [
+      'versova', 'dnnagar', 'azadnagar', 'andheri', 'chakala', 'airportroad',
+      'marolnaka', 'sakinaka', 'asalpha', 'jagrutinagar', 'ghatkopar',
+      'dahisareast', 'kandivalieast', 'maladeast', 'goregaoneast', 'aarey',
+      'coffeparade', 'mumbaicentral', 'mahalaxmi', 'worli', 'dadar',
+      'dharavi', 'bkc', 'santacruz', 'domesticairport', 'internationalairport',
+      'seepz', 'churchgate', 'marinelines', 'grantroad', 'bandra',
+      'thane', 'kurla', 'panvel', 'vashi', 'belapur',
+    ];
+    return mumbaiStations.includes(target) || mumbaiStations.some(s => s.startsWith(target.slice(0, 5)));
   }
 
   mapOccupancyToCrowding(occupancyStatus: string): 'low' | 'medium' | 'high' {

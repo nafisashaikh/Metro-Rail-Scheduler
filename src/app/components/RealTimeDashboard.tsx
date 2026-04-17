@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Wifi, WifiOff, AlertTriangle, Clock, Users, MapPin } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 
@@ -43,16 +43,23 @@ const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
   const [arrivals, setArrivals] = useState<RealTimeArrival[]>([]);
   const [alerts, setAlerts] = useState<ServiceAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [dataSource, setDataSource] = useState<'mock' | 'gtfs' | 'hybrid'>('mock');
+  const hasFetchedOnce = useRef(false);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
+        // Show skeleton only on first fetch; use a subtle spinner for background refreshes.
+        if (!hasFetchedOnce.current) {
+          setLoading(true);
+        } else {
+          setIsRefreshing(true);
+        }
         setError(null);
 
         const query = lineId ? `?lineId=${lineId}` : '';
@@ -136,7 +143,9 @@ const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
         const message = error instanceof Error ? error.message : 'Failed to fetch real-time data';
         setError(message);
       } finally {
+        hasFetchedOnce.current = true;
         setLoading(false);
+        setIsRefreshing(false);
       }
     };
 
@@ -250,6 +259,9 @@ const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Clock className="h-4 w-4" />
                 Updated {lastUpdated.toLocaleTimeString()}
+                {isRefreshing && (
+                  <Loader2 className="h-3 w-3 animate-spin text-blue-500 ml-1" />
+                )}
               </div>
             )}
           </div>

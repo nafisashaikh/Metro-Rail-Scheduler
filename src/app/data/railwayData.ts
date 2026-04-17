@@ -214,9 +214,9 @@ export const harbourLine: MetroLine = {
     { name: 'Mahim Junction', lat: 19.0386, lng: 72.8441 },
     { name: 'Chunabhatti', lat: 19.0469, lng: 72.8722 },
     { name: 'Kurla', lat: 19.0665, lng: 72.8821 },
-    { name: 'Tilak Nagar', lat: 19.0766, lng: 72.8894 },
-    { name: 'Chembur', lat: 19.062, lng: 72.8996 },
-    { name: 'Govandi', lat: 19.0493, lng: 72.9169 },
+    { name: 'Tilak Nagar',    lat: 19.0766, lng: 72.8894 },
+    { name: 'Chembur',         lat: 19.0736, lng: 72.9008 },
+    { name: 'Govandi',         lat: 19.0493, lng: 72.9169 },
     { name: 'Mankhurd', lat: 19.0421, lng: 72.9264 },
     { name: 'Vashi', lat: 19.0759, lng: 72.9987 },
     { name: 'Sanpada', lat: 19.068, lng: 73.0101 },
@@ -293,6 +293,7 @@ export const generateRailwayTrains = (station: string, line: MetroLine, weatherC
           : 'MH';
   times.slice(0, 12).forEach((time, i) => {
     if (idx < line.stations.length - 1) {
+      const fwdCap = generateTrainCapacity(time);
       trains.push({
         id: `${line.id}-${station}-fwd-${i}`,
         trainNumber: `${prefix}${90001 + i}`,
@@ -300,12 +301,13 @@ export const generateRailwayTrains = (station: string, line: MetroLine, weatherC
         destination: line.stations[line.stations.length - 1],
         departureTime: time,
         platform: ['1', '2', '3', '4', '5', '6'][Math.floor(Math.random() * 6)],
-        status: (weatherCondition?.includes('Rain') || weatherCondition?.includes('Storm')) 
-            ? Math.random() > 0.3 ? 'delayed' : 'on-time' 
+        status:
+          weatherCondition?.includes('Rain') || weatherCondition?.includes('Storm')
+            ? Math.random() > 0.3 ? 'delayed' : 'on-time'
             : Math.random() > 0.9 ? 'delayed' : 'on-time',
         health: generateTrainHealth(),
-        capacity: generateTrainCapacity(time),
-        crowdLevels: generateCrowdLevels(generateTrainCapacity(time).percentage),
+        capacity: fwdCap,
+        crowdLevels: generateCrowdLevels(fwdCap.percentage),
       });
     }
     if (idx > 0 && i < 11) {

@@ -4,6 +4,7 @@ import {
   generateTrainCapacity,
   generateDepartureTimes,
   generateCrowdLevels,
+  generateStationFacilities,
 } from '../utils/trainGenerators';
 
 // ─── Mumbai Metro Lines ──────────────────────────────────────────────────────
@@ -128,30 +129,33 @@ export const mumbaiMetroLines: MetroLine[] = [
       'Aarey',
     ],
     stationCoords: [
-      { name: 'Cuffe Parade', lat: 18.9067, lng: 72.8147 },
-      { name: 'Mumbai CSMT', lat: 18.94, lng: 72.8357 },
-      { name: 'Masjid', lat: 18.9478, lng: 72.8366 },
-      { name: 'Marine Lines', lat: 18.9432, lng: 72.8233 },
-      { name: 'Girgaon', lat: 18.9541, lng: 72.8174 },
-      { name: 'Grant Road', lat: 18.9636, lng: 72.8161 },
-      { name: 'Mumbai Central', lat: 18.9691, lng: 72.8193 },
-      { name: 'Mahalaxmi', lat: 18.9839, lng: 72.8187 },
-      { name: 'Science Museum', lat: 19.0002, lng: 72.8122 },
-      { name: 'Acharya Atre Chowk', lat: 19.0068, lng: 72.8106 },
-      { name: 'Worli', lat: 19.0178, lng: 72.8161 },
-      { name: 'Siddhivinayak', lat: 19.0164, lng: 72.8319 },
-      { name: 'Dadar', lat: 19.018, lng: 72.8425 },
-      { name: 'Shitaladevi', lat: 19.0268, lng: 72.8422 },
-      { name: 'Dharavi', lat: 19.044, lng: 72.8556 },
-      { name: 'BKC', lat: 19.0601, lng: 72.8665 },
-      { name: 'Santacruz', lat: 19.0815, lng: 72.85 }, // Shifted slightly east to smooth path
-      { name: 'Domestic Airport', lat: 19.088, lng: 72.855 },
-      { name: 'International Airport', lat: 19.0938, lng: 72.8602 },
-      { name: 'Sahar Road', lat: 19.1, lng: 72.865 },
-      { name: 'Marol Naka', lat: 19.1051, lng: 72.8683 },
-      { name: 'MIDC', lat: 19.11, lng: 72.87 },
-      { name: 'SEEPZ', lat: 19.1217, lng: 72.8744 },
-      { name: 'Aarey', lat: 19.152, lng: 72.8571 },
+      { name: 'Cuffe Parade',           lat: 18.9067, lng: 72.8147 },
+      { name: 'Mumbai CSMT',            lat: 18.9400, lng: 72.8357 },
+      { name: 'Masjid',                 lat: 18.9478, lng: 72.8366 },
+      { name: 'Marine Lines',           lat: 18.9432, lng: 72.8233 },
+      { name: 'Girgaon',               lat: 18.9541, lng: 72.8174 },
+      { name: 'Grant Road',             lat: 18.9636, lng: 72.8161 },
+      { name: 'Mumbai Central',         lat: 18.9691, lng: 72.8193 },
+      { name: 'Mahalaxmi',              lat: 18.9839, lng: 72.8187 },
+      { name: 'Science Museum',         lat: 19.0002, lng: 72.8122 },
+      { name: 'Acharya Atre Chowk',    lat: 19.0068, lng: 72.8106 },
+      { name: 'Worli',                  lat: 19.0178, lng: 72.8161 },
+      { name: 'Siddhivinayak',          lat: 19.0240, lng: 72.8319 },
+      { name: 'Dadar',                  lat: 19.0180, lng: 72.8425 },
+      { name: 'Shitaladevi',            lat: 19.0268, lng: 72.8490 },
+      { name: 'Dharavi',                lat: 19.0440, lng: 72.8556 },
+      { name: 'BKC',                    lat: 19.0601, lng: 72.8665 },
+      // From BKC the underground alignment curves NE toward the airport corridor.
+      // All coords from here are strictly northeast of BKC to eliminate the old
+      // zigzag that went back west to 72.85 before Santacruz.
+      { name: 'Santacruz',              lat: 19.0760, lng: 72.8720 },
+      { name: 'Domestic Airport',       lat: 19.0880, lng: 72.8620 },
+      { name: 'International Airport',  lat: 19.0960, lng: 72.8658 },
+      { name: 'Sahar Road',             lat: 19.1012, lng: 72.8683 },
+      { name: 'Marol Naka',             lat: 19.1051, lng: 72.8703 },
+      { name: 'MIDC',                   lat: 19.1100, lng: 72.8720 },
+      { name: 'SEEPZ',                  lat: 19.1217, lng: 72.8744 },
+      { name: 'Aarey',                  lat: 19.1569, lng: 72.8762 },
     ],
   },
   {
@@ -262,6 +266,7 @@ export const generateTrainsForStation = (station: string, line: MetroLine, weath
   departureTimes.slice(0, 12).forEach((time, index) => {
     const trainNum = 90001 + index;
     if (stationIndex < line.stations.length - 1) {
+      const fwdCap = generateTrainCapacity(time, totalCap);
       trains.push({
         id: `${line.id}-${station}-fwd-${index}`,
         trainNumber: `${prefix}${trainNum}`,
@@ -269,12 +274,13 @@ export const generateTrainsForStation = (station: string, line: MetroLine, weath
         destination: line.stations[line.stations.length - 1],
         departureTime: time,
         platform: stationIndex % 2 === 0 ? '1' : '2',
-        status: (weatherCondition?.includes('Rain') || weatherCondition?.includes('Storm')) 
-            ? Math.random() > 0.4 ? 'delayed' : 'on-time' 
+        status:
+          weatherCondition?.includes('Rain') || weatherCondition?.includes('Storm')
+            ? Math.random() > 0.4 ? 'delayed' : 'on-time'
             : Math.random() > 0.85 ? 'delayed' : 'on-time',
         health: generateTrainHealth(),
-        capacity: generateTrainCapacity(time, totalCap),
-        crowdLevels: generateCrowdLevels(Math.round((generateTrainCapacity(time, totalCap).current / totalCap) * 100)),
+        capacity: fwdCap,
+        crowdLevels: generateCrowdLevels(fwdCap.percentage),
       });
     }
     if (stationIndex > 0 && index < 11) {
@@ -314,6 +320,9 @@ export const getStationMetrics = (station: string): StationMetrics => {
     'Thane',
     'Panvel',
     'Kurla',
+    'BKC',
+    'SEEPZ',
+    'Marol Naka',
   ];
   const isMajor = majorStations.some((s) => station.includes(s.split(' ')[0]));
   const efficiency = isMajor ? 70 + Math.random() * 20 : 80 + Math.random() * 15;
@@ -336,6 +345,7 @@ export const getStationMetrics = (station: string): StationMetrics => {
     dailyPassengers: Math.round(dailyPassengers),
     peakHours: ['08:00–10:00', '17:00–20:00'],
     congestionLevel,
+    facilities: generateStationFacilities(),
   };
 };
 

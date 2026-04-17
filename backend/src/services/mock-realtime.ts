@@ -76,29 +76,51 @@ export class MockRealtimeService {
   getNextArrivals(stationId: string, lineId?: string): any[] {
     const arrivals: any[] = [];
     const now = Date.now();
-    
+    // Normalize the incoming stationId so both name-based ("Andheri") and
+    // id-based ("andheri") lookups work against whatever the backend data uses.
+    const normalizedTarget = stationId.toLowerCase().replace(/[^a-z0-9]/g, '');
+
     this.activeTrains.forEach((train: TrainStatus) => {
       if (lineId && train.lineId !== lineId) return;
-      
+
       const line = metroLines.find((l: MetroLine) => l.id === train.lineId);
       if (!line) return;
-      
-      const stationIndex = line.stations.findIndex((s: Station) => s.id === stationId);
+
+      // Support both Station objects (with .id/.name) and plain strings.
+      const stationIndex = line.stations.findIndex((s: Station) => {
+        const name = typeof s === 'string' ? s : (s.name ?? s.id ?? '');
+        return name.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedTarget;
+      });
       if (stationIndex === -1) return;
-      
-      // Calculate arrival time based on train position and speed
+
+      // Calculate arrival time based on train position and speed.
       const trainStationIndex = train.currentStationIndex;
-      const stationDistance = Math.abs(stationIndex - trainStationIndex);
-      
-      if (stationDistance <= 5) { // Only show trains within 5 stations
-        const baseTime = stationDistance * 2; // 2 min per station
+      const stationDistance = stationIndex - trainStationIndex;
+
+      // Only include trains heading toward this station (correct direction).
+      const isInRange = train.direction === 'forward'
+        ? stationDistance > 0 && stationDistance <= 5
+        : stationDistance < 0 && stationDistance >= -5;
+
+      if (isInRange) {
+        const baseTime = Math.abs(stationDistance) * 2; // 2 min per station
         const arrivalTime = baseTime + train.delay;
         const actualArrival = now + (arrivalTime * 60 * 1000);
-        
+
+        const destination = (() => {
+          if (train.direction === 'forward') {
+            const dest = line.stations[line.stations.length - 1];
+            return typeof dest === 'string' ? dest : dest.name;
+          }
+          const dest = line.stations[0];
+          return typeof dest === 'string' ? dest : dest.name;
+        })();
+
         arrivals.push({
           trainId: train.id,
           lineId: train.lineId,
           lineName: train.lineName,
+          destination: destination ?? 'Terminal',
           arrivalTime: actualArrival,
           delay: train.delay,
           crowding: train.crowding,
@@ -107,7 +129,7 @@ export class MockRealtimeService {
         });
       }
     });
-    
+
     return arrivals
       .sort((a, b) => a.arrivalTime - b.arrivalTime)
       .slice(0, 3); // Next 3 trains
