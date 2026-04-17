@@ -2,16 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Users, Clock, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 
-interface CrowdingData {
-  level: 'low' | 'medium' | 'high';
-  label: string;
-  confidence: number;
-  suggestion?: string;
-  historicalPattern?: string;
-  passengerCount?: number;
-  capacity?: number;
-}
-
 interface TrainArrival {
   trainId: string;
   lineId: string;
@@ -65,7 +55,7 @@ const CrowdingInsightsPanel: React.FC<CrowdingInsightsPanelProps> = ({
         setError(err.message);
         
         // Mock data fallback with enhanced crowding simulation
-        const mockArrivals = generateMockCrowdingData(stationId);
+        const mockArrivals = generateMockCrowdingData();
         setArrivals(mockArrivals);
         setLastUpdated(new Date());
       } finally {
@@ -79,7 +69,7 @@ const CrowdingInsightsPanel: React.FC<CrowdingInsightsPanelProps> = ({
     return () => clearInterval(interval);
   }, [stationId, lineId]);
 
-  const generateMockCrowdingData = (station: string): TrainArrival[] => {
+  const generateMockCrowdingData = (): TrainArrival[] => {
     const now = Date.now();
     const hour = new Date().getHours();
     

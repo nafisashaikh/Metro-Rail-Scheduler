@@ -4,7 +4,6 @@ import {
   generateTrainCapacity,
   generateDepartureTimes,
   generateCrowdLevels,
-  generateStationFacilities,
 } from '../utils/trainGenerators';
 
 // ─── Mumbai Metro Lines ──────────────────────────────────────────────────────

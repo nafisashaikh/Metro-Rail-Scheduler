@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, AlertTriangle, Users } from 'lucide-react';
+import { apiUrl } from '../config/api';
 
 interface TrainArrival {
   trainId: string;
@@ -25,7 +26,7 @@ export function LiveTrainStatus({ stationId, lineId }: LiveStatusProps) {
   const fetchArrivals = async () => {
     try {
       const url = `/realtime/arrivals/${stationId}${lineId ? `?lineId=${lineId}` : ''}`;
-      const response = await fetch(`http://localhost:4001${url}`);
+      const response = await fetch(apiUrl(url));
       
       if (response.ok) {
         const data = await response.json();
@@ -122,7 +123,7 @@ export function LiveTrainStatus({ stationId, lineId }: LiveStatusProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            {arrivals.map((arrival, index) => {
+            {arrivals.map((arrival) => {
               const minutes = getMinutesUntilArrival(arrival.arrivalTime);
               const isImminent = minutes <= 1;
               

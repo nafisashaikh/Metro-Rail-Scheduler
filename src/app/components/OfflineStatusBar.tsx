@@ -3,7 +3,6 @@ import {
   Wifi, 
   WifiOff, 
   Download, 
-  Clock, 
   AlertTriangle, 
   CheckCircle,
   Database,
@@ -28,8 +27,7 @@ const OfflineStatusBar: React.FC<OfflineStatusBarProps> = ({
     lastOnline,
     cacheInfo,
     cacheSize,
-    clearCache,
-    isDataStale
+    clearCache
   } = useOfflineMode();
 
   const cacheAge = dataTimestamp ? Date.now() - dataTimestamp : undefined;

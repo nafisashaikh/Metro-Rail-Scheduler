@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
-import { MapPin, ArrowRight, Clock, Heart, Search } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Clock, Heart, Search } from 'lucide-react';
 import { LiveTrainStatus } from './LiveTrainStatus';
-import { SavedRoutes, useSavedRoutes } from './SavedRoutes';
+import { SavedRoutes, useSavedRoutes, type SavedRoute } from './SavedRoutes';
+
+interface StationOption {
+  id: string;
+  name: string;
+  lineId: string;
+}
+
+interface PlannedRoute {
+  fromStation: StationOption;
+  toStation: StationOption;
+  lineId: string;
+  lineName: string;
+  duration: number;
+  distance: string;
+  stopsCount: number;
+  crowdingLevel: string;
+}
 
 // Simple station list for demo
-const stations = [
+const stations: StationOption[] = [
   { id: 'ameerpet', name: 'Ameerpet', lineId: 'redline' },
   { id: 'begumpet', name: 'Begumpet', lineId: 'redline' },
   { id: 'rasoolpura', name: 'Rasoolpura', lineId: 'redline' },
@@ -19,9 +36,20 @@ const stations = [
 export function SimpleJourneyPlanner() {
   const [fromStation, setFromStation] = useState('');
   const [toStation, setToStation] = useState('');
-  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [selectedRoute, setSelectedRoute] = useState<PlannedRoute | null>(null);
   const [showLiveStatus, setShowLiveStatus] = useState(false);
   const { addRoute } = useSavedRoutes();
+
+  const buildRouteInfo = (fromStationData: StationOption, toStationData: StationOption): PlannedRoute => ({
+    fromStation: fromStationData,
+    toStation: toStationData,
+    lineId: fromStationData.lineId,
+    lineName: fromStationData.lineId === 'redline' ? 'Red Line' : 'Green Line',
+    duration: Math.floor(Math.random() * 20) + 15,
+    distance: '12.5 km',
+    stopsCount: Math.abs(stations.indexOf(fromStationData) - stations.indexOf(toStationData)),
+    crowdingLevel: 'Medium crowding expected'
+  });
 
   const planRoute = () => {
     if (!fromStation || !toStation || fromStation === toStation) {
@@ -37,17 +65,7 @@ export function SimpleJourneyPlanner() {
       return;
     }
 
-    // Simple route planning logic
-    const routeInfo = {
-      fromStation: fromStationData,
-      toStation: toStationData,
-      lineId: fromStationData.lineId,
-      lineName: fromStationData.lineId === 'redline' ? 'Red Line' : 'Green Line',
-      duration: Math.floor(Math.random() * 20) + 15, // 15-35 minutes
-      distance: '12.5 km',
-      stopsCount: Math.abs(stations.indexOf(fromStationData) - stations.indexOf(toStationData)),
-      crowdingLevel: 'Medium crowding expected'
-    };
+    const routeInfo = buildRouteInfo(fromStationData, toStationData);
 
     setSelectedRoute(routeInfo);
     setShowLiveStatus(true);
@@ -70,14 +88,19 @@ export function SimpleJourneyPlanner() {
     }
   };
 
-  const handleSavedRouteSelect = (route: any) => {
-    setFromStation(route.fromStation.id);
-    setToStation(route.toStation.id);
-    
-    // Auto-plan after a short delay
-    setTimeout(() => {
-      planRoute();
-    }, 100);
+  const handleSavedRouteSelect = (route: SavedRoute) => {
+    const fromStationData = stations.find((station) => station.id === route.fromStation.id);
+    const toStationData = stations.find((station) => station.id === route.toStation.id);
+
+    if (!fromStationData || !toStationData) {
+      alert('Saved route uses station data that is no longer available');
+      return;
+    }
+
+    setFromStation(fromStationData.id);
+    setToStation(toStationData.id);
+    setSelectedRoute(buildRouteInfo(fromStationData, toStationData));
+    setShowLiveStatus(true);
   };
 
   return (

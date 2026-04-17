@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
 
+type CsvRecord = Record<string, string>;
+
 interface GtfsStop {
   stop_id: string;
   stop_name: string;
@@ -52,6 +54,10 @@ class GtfsStaticService {
     this.loadGtfsData();
   }
 
+  private parseCsv(content: string): CsvRecord[] {
+    return parse(content, { columns: true, skip_empty_lines: true }) as CsvRecord[];
+  }
+
   private loadGtfsData(): void {
     try {
       this.loadStops();
@@ -70,7 +76,7 @@ class GtfsStaticService {
     if (!fs.existsSync(stopsFile)) return;
 
     const content = fs.readFileSync(stopsFile, 'utf-8');
-    const records = csv.parse(content, { columns: true, skip_empty_lines: true });
+    const records = this.parseCsv(content);
     
     for (const record of records) {
       this.stops.set(record.stop_id, {
@@ -90,7 +96,7 @@ class GtfsStaticService {
     if (!fs.existsSync(routesFile)) return;
 
     const content = fs.readFileSync(routesFile, 'utf-8');
-    const records = parse(content, { columns: true, skip_empty_lines: true });
+    const records = this.parseCsv(content);
     
     for (const record of records) {
       this.routes.set(record.route_id, {
@@ -109,7 +115,7 @@ class GtfsStaticService {
     if (!fs.existsSync(tripsFile)) return;
 
     const content = fs.readFileSync(tripsFile, 'utf-8');
-    const records = parse(content, { columns: true, skip_empty_lines: true });
+    const records = this.parseCsv(content);
     
     for (const record of records) {
       this.trips.set(record.trip_id, {
@@ -128,7 +134,7 @@ class GtfsStaticService {
     if (!fs.existsSync(stopTimesFile)) return;
 
     const content = fs.readFileSync(stopTimesFile, 'utf-8');
-    const records = parse(content, { columns: true, skip_empty_lines: true });
+    const records = this.parseCsv(content);
     
     for (const record of records) {
       const tripId = record.trip_id;

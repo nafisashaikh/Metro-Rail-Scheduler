@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Heart, Clock, ArrowRight, Plus, Trash2, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Heart, Clock, ArrowRight, Trash2, MapPin } from 'lucide-react';
 
-interface SavedRoute {
+interface StationRef {
+  id: string;
+  name: string;
+}
+
+export interface SavedRoute {
   id: string;
   name: string;
   fromStation: {
@@ -27,40 +32,32 @@ export function SavedRoutes({ onRouteSelect }: SavedRoutesProps) {
   const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const readSavedRoutes = (): SavedRoute[] => {
+    const raw = localStorage.getItem('metro-saved-routes');
+    if (!raw) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as SavedRoute[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error('Failed to parse saved routes:', error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     loadSavedRoutes();
   }, []);
 
   const loadSavedRoutes = () => {
-    const saved = localStorage.getItem('metro-saved-routes');
-    if (saved) {
-      try {
-        setSavedRoutes(JSON.parse(saved));
-      } catch (error) {
-        console.error('Failed to load saved routes:', error);
-      }
-    }
+    setSavedRoutes(readSavedRoutes());
   };
 
   const saveSavedRoutes = (routes: SavedRoute[]) => {
     localStorage.setItem('metro-saved-routes', JSON.stringify(routes));
     setSavedRoutes(routes);
-  };
-
-  const addRoute = (fromStation: any, toStation: any, lineId: string, lineName: string, customName?: string) => {
-    const newRoute: SavedRoute = {
-      id: Date.now().toString(),
-      name: customName || `${fromStation.name} → ${toStation.name}`,
-      fromStation,
-      toStation,
-      lineId,
-      lineName,
-      createdAt: new Date().toISOString(),
-      usageCount: 0
-    };
-
-    const updated = [...savedRoutes, newRoute];
-    saveSavedRoutes(updated);
   };
 
   const deleteRoute = (routeId: string) => {
@@ -88,9 +85,8 @@ export function SavedRoutes({ onRouteSelect }: SavedRoutesProps) {
     return 'New route';
   };
 
-  const mostUsedRoutes = savedRoutes
-    .sort((a, b) => b.usageCount - a.usageCount)
-    .slice(0, 3);
+  const sortedRoutes = [...savedRoutes].sort((a, b) => b.usageCount - a.usageCount);
+  const visibleRoutes = isExpanded ? sortedRoutes : sortedRoutes.slice(0, 2);
 
   if (savedRoutes.length === 0) {
     return (
@@ -131,7 +127,7 @@ export function SavedRoutes({ onRouteSelect }: SavedRoutesProps) {
       <div className="p-4">
         {/* Quick access - always show top 2 */}
         <div className="space-y-2">
-          {mostUsedRoutes.slice(0, isExpanded ? savedRoutes.length : 2).map(route => (
+          {visibleRoutes.map(route => (
             <div 
               key={route.id}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors group"
@@ -171,12 +167,12 @@ export function SavedRoutes({ onRouteSelect }: SavedRoutesProps) {
           ))}
         </div>
 
-        {!isExpanded && savedRoutes.length > 2 && (
+        {!isExpanded && sortedRoutes.length > 2 && (
           <button
             onClick={() => setIsExpanded(true)}
             className="w-full mt-3 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
           >
-            Show {savedRoutes.length - 2} more routes
+            Show {sortedRoutes.length - 2} more routes
           </button>
         )}
       </div>
@@ -186,9 +182,19 @@ export function SavedRoutes({ onRouteSelect }: SavedRoutesProps) {
 
 // Hook for easy access to saved routes functionality
 export function useSavedRoutes() {
-  const addRoute = (fromStation: any, toStation: any, lineId: string, lineName: string, customName?: string) => {
+  const addRoute = (fromStation: StationRef, toStation: StationRef, lineId: string, lineName: string, customName?: string) => {
     const saved = localStorage.getItem('metro-saved-routes');
-    const routes = saved ? JSON.parse(saved) : [];
+
+    let routes: SavedRoute[] = [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as SavedRoute[];
+        routes = Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.error('Failed to read saved routes:', error);
+        routes = [];
+      }
+    }
 
     // Check if route already exists
     const exists = routes.some((route: SavedRoute) => 

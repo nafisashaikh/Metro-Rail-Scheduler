@@ -1,4 +1,3 @@
-import React from 'react';
 import { SimpleJourneyPlanner } from './SimpleJourneyPlanner';
 
 // Add our new live features to the passenger experience

@@ -40,7 +40,7 @@ import {
   QrCode,
   Bot,
   Compass,
-  WifiOff, 
+  WifiOff,
   ZapOff,
   Megaphone
 } from 'lucide-react';
@@ -189,11 +189,10 @@ export function DashboardSection({
               setActiveTab(tab.id);
               if (tab.id !== 'alerts') onCloseAlerts();
             }}
-            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm transition-all flex-shrink-0 ${
-              activeTab === tab.id
+            className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm transition-all flex-shrink-0 ${activeTab === tab.id
                 ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
+              }`}
             style={{ fontWeight: activeTab === tab.id ? 600 : 400 }}
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
@@ -221,7 +220,7 @@ export function DashboardSection({
 
   useEffect(() => {
     if (networkQuality === 'low') {
-        setForceLowBandwidth(true);
+      setForceLowBandwidth(true);
     }
   }, [networkQuality]);
 
@@ -232,18 +231,18 @@ export function DashboardSection({
       <div className="flex flex-col gap-4">
         {/* Data Saver Mode Active Alert */}
         {isLowBandwidth && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 p-2.5 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <WifiOff className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">{t.liteMode}</span>
-                </div>
-                <button 
-                    onClick={toggleDataSaver}
-                    className="text-[10px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
-                >
-                    {t.switchFull}
-                </button>
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 p-2.5 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">{t.liteMode}</span>
             </div>
+            <button
+              onClick={toggleDataSaver}
+              className="text-[10px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              {t.switchFull}
+            </button>
+          </div>
         )}
 
         {/* Eco Stats Banner - HIDDEN in low bandwidth to save data/rendering */}
@@ -394,8 +393,8 @@ export function DashboardSection({
             </div>
             <AlertPanel
               alerts={alerts.filter((a) => a.section === section)}
-              onResolve={() => {}}
-              onAdd={() => {}}
+              onResolve={() => { }}
+              onAdd={() => { }}
               userRole={userRole}
               section={section}
             />
@@ -443,15 +442,15 @@ export function DashboardSection({
             {selectedStation ? (
               isLowBandwidth ? (
                 <div className="h-full flex flex-col items-center justify-center py-20 text-center">
-                    <ZapOff className="w-12 h-12 mb-4 text-slate-300" />
-                    <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Map restricted in Lite Mode</h3>
-                    <p className="text-xs text-slate-500 max-w-xs mt-1">Downloading station blueprints requires high bandwidth. Please switch to 'Full Mode' to view the map.</p>
-                    <button 
-                        onClick={toggleDataSaver}
-                        className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-bold"
-                    >
-                        Enable Full Mode
-                    </button>
+                  <ZapOff className="w-12 h-12 mb-4 text-slate-300" />
+                  <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Map restricted in Lite Mode</h3>
+                  <p className="text-xs text-slate-500 max-w-xs mt-1">Downloading station blueprints requires high bandwidth. Please switch to 'Full Mode' to view the map.</p>
+                  <button
+                    onClick={toggleDataSaver}
+                    className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-bold"
+                  >
+                    Enable Full Mode
+                  </button>
                 </div>
               ) : (
                 <StationBlueprint stationName={selectedStation} />
@@ -576,7 +575,7 @@ export function DashboardSection({
             />
           </div>
         )}
-        
+
         {/* Staff Task Manager */}
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4">
           <StaffTasks />
@@ -829,9 +828,9 @@ export function DashboardSection({
           {/* Staff Broadcast Section */}
           {activeTab === 'broadcast' && (
             <div className="max-w-2xl mx-auto py-10">
-              <StaffBroadcast 
-                section={section} 
-                onBroadcast={onAddAlert} 
+              <StaffBroadcast
+                section={section}
+                onBroadcast={onAddAlert}
               />
             </div>
           )}

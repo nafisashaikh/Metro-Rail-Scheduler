@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MetroLine, Train, SystemSection } from '../types/metro';
 import { generateTrainsForStation } from '../data/metroData';
 import { generateRailwayTrains } from '../data/railwayData';
@@ -213,8 +213,32 @@ export function PassengerJourneyPlanner({
   const [loadState, setLoadState] = useState<'idle' | 'loading' | 'done' | 'offline'>('idle');
   const [showCount, setShowCount] = useState(PAGE_SIZE);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const searchTimeoutRef = useRef<number | null>(null);
 
   const allStations = useMemo(() => selectedLine?.stations ?? [], [selectedLine]);
+
+  useEffect(() => {
+    if (!lines.length) {
+      setSelectedLine(null);
+      return;
+    }
+
+    setSelectedLine((currentLine) => {
+      if (currentLine && lines.some((line) => line.id === currentLine.id)) {
+        return currentLine;
+      }
+
+      return lines[0] || null;
+    });
+  }, [lines]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current !== null) {
+        window.clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const toStations = useMemo(
     () => allStations.filter((s) => s !== fromStation),
@@ -227,8 +251,12 @@ export function PassengerJourneyPlanner({
     setShowCount(PAGE_SIZE);
     setTrains([]);
 
+    if (searchTimeoutRef.current !== null) {
+      window.clearTimeout(searchTimeoutRef.current);
+    }
+
     // Simulate low-bandwidth loading (realistic for 2G/3G)
-    setTimeout(() => {
+    searchTimeoutRef.current = window.setTimeout(() => {
       try {
         const fromIndex = selectedLine.stations.indexOf(fromStation);
         const toIndex = selectedLine.stations.indexOf(toStation);
@@ -250,6 +278,7 @@ export function PassengerJourneyPlanner({
       } catch {
         setLoadState('offline');
       }
+      searchTimeoutRef.current = null;
     }, 1200); // deliberate delay simulates network fetch
   };
 

@@ -1,7 +1,7 @@
 // Service Worker for offline caching
-const CACHE_NAME = 'metro-rail-v2';
-const STATIC_CACHE_NAME = 'metro-rail-static-v2';
-const DATA_CACHE_NAME = 'metro-rail-data-v2';
+const CACHE_NAME = 'metro-rail-v3';
+const STATIC_CACHE_NAME = 'metro-rail-static-v3';
+const DATA_CACHE_NAME = 'metro-rail-data-v3';
 
 // Cache duration settings
 const CACHE_DURATIONS = {
@@ -155,6 +155,12 @@ async function handleApiRequest(request) {
       return networkResponse;
     }
     
+    // For non-GET requests or auth endpoints, return the actual server response (e.g. 401, 400)
+    // to prevent swallowing errors and incorrectly falling back to a 503 Offline block.
+    if (request.method !== 'GET' || url.pathname.includes('/auth/')) {
+      return networkResponse;
+    }
+
     throw new Error(`Network response not ok: ${networkResponse.status}`);
     
   } catch (error) {

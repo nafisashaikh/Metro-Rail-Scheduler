@@ -309,10 +309,11 @@ router.get('/arrivals/:stationId', async (req, res) => {
       cacheAge: Date.now() - realtimeCache.lastFetched
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Arrivals API error:', error);
     res.status(500).json({ 
       error: 'Failed to fetch arrivals',
-      details: error.message 
+      details: message 
     });
   }
 });

@@ -55,58 +55,86 @@ const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
         setLoading(true);
         setError(null);
 
-        // Try GTFS real-time API first
-        let arrivalsData;
+        const query = lineId ? `?lineId=${lineId}` : '';
+        const gtfsUrl = `${API_BASE_URL}/api/realtime-gtfs/arrivals/${stationId}${query}`;
+        const mockUrl = `${API_BASE_URL}/realtime/arrivals/${stationId}${query}`;
+
+        let nextDataSource: 'mock' | 'gtfs' | 'hybrid' = 'mock';
+        let gtfsErrorMessage = '';
+        let gtfsArrivals: RealTimeArrival[] = [];
+        let mockArrivals: RealTimeArrival[] = [];
+
+        // Try GTFS first, then degrade gracefully if feed is unavailable or empty.
         try {
-          const gtfsUrl = `${API_BASE_URL}/api/realtime-gtfs/arrivals/${stationId}${lineId ? `?lineId=${lineId}` : ''}`;
           const gtfsResponse = await fetch(gtfsUrl);
-          
-          if (gtfsResponse.ok) {
-            arrivalsData = await gtfsResponse.json();
-            setDataSource('gtfs');
-          } else {
+          if (!gtfsResponse.ok) {
             throw new Error(`GTFS API failed: ${gtfsResponse.status}`);
           }
-        } catch (gtfsError) {
-          console.warn('GTFS API unavailable, trying mock API:', gtfsError.message);
-          
-          // Fallback to mock API
-          try {
-            const mockUrl = `${API_BASE_URL}/realtime/arrivals/${stationId}${lineId ? `?lineId=${lineId}` : ''}`;
-            const mockResponse = await fetch(mockUrl);
-            
-            if (mockResponse.ok) {
-              arrivalsData = await mockResponse.json();
-              setDataSource('mock');
-            } else {
-              throw new Error(`Mock API also failed: ${mockResponse.status}`);
-            }
-          } catch (mockError) {
-            throw new Error(`Both APIs failed: GTFS (${gtfsError.message}), Mock (${mockError.message})`);
-          }
+
+          const gtfsData = await gtfsResponse.json() as { arrivals?: RealTimeArrival[] };
+          gtfsArrivals = Array.isArray(gtfsData.arrivals) ? gtfsData.arrivals : [];
+        } catch (error) {
+          gtfsErrorMessage = error instanceof Error ? error.message : 'Unknown GTFS API error';
         }
 
-        setArrivals(arrivalsData.arrivals || []);
+        if (gtfsArrivals.length > 0) {
+          nextDataSource = 'gtfs';
+        } else {
+          try {
+            const mockResponse = await fetch(mockUrl);
+            if (!mockResponse.ok) {
+              throw new Error(`Mock API failed: ${mockResponse.status}`);
+            }
+
+            const mockData = await mockResponse.json() as { arrivals?: RealTimeArrival[] };
+            mockArrivals = Array.isArray(mockData.arrivals) ? mockData.arrivals : [];
+          } catch (error) {
+            const mockErrorMessage = error instanceof Error ? error.message : 'Unknown Mock API error';
+            const gtfsPart = gtfsErrorMessage || 'GTFS API returned no arrivals';
+            throw new Error(`Real-time APIs failed: GTFS (${gtfsPart}), Mock (${mockErrorMessage})`);
+          }
+
+          nextDataSource = gtfsErrorMessage ? 'mock' : 'hybrid';
+        }
+
+        setDataSource(nextDataSource);
+        setArrivals(gtfsArrivals.length > 0 ? gtfsArrivals : mockArrivals);
         setLastUpdated(new Date());
 
         // Fetch alerts
         try {
-          const alertsUrl = dataSource === 'gtfs' 
-            ? `${API_BASE_URL}/api/realtime-gtfs/alerts`
-            : `${API_BASE_URL}/realtime/alerts`;
-            
-          const alertsResponse = await fetch(alertsUrl);
-          if (alertsResponse.ok) {
-            const alertsData = await alertsResponse.json();
-            setAlerts(alertsData.alerts || []);
+          const alertUrls = nextDataSource === 'gtfs'
+            ? [`${API_BASE_URL}/api/realtime-gtfs/alerts`]
+            : nextDataSource === 'mock'
+              ? [`${API_BASE_URL}/realtime/alerts`]
+              : [`${API_BASE_URL}/api/realtime-gtfs/alerts`, `${API_BASE_URL}/realtime/alerts`];
+
+          const alertResults = await Promise.allSettled(
+            alertUrls.map((url) => fetch(url))
+          );
+
+          const mergedAlerts: ServiceAlert[] = [];
+          for (const result of alertResults) {
+            if (result.status !== 'fulfilled' || !result.value.ok) {
+              continue;
+            }
+
+            const alertData = await result.value.json() as { alerts?: ServiceAlert[] };
+            if (Array.isArray(alertData.alerts)) {
+              mergedAlerts.push(...alertData.alerts);
+            }
           }
+
+          const dedupedAlerts = Array.from(new Map(mergedAlerts.map((alert) => [alert.id, alert])).values());
+          setAlerts(dedupedAlerts);
         } catch (alertError) {
           console.warn('Failed to fetch alerts:', alertError);
         }
 
-      } catch (err) {
-        console.error('Failed to fetch real-time data:', err);
-        setError(err.message);
+      } catch (error) {
+        console.error('Failed to fetch real-time data:', error);
+        const message = error instanceof Error ? error.message : 'Failed to fetch real-time data';
+        setError(message);
       } finally {
         setLoading(false);
       }

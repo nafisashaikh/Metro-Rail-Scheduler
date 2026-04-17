@@ -2,20 +2,26 @@ import { useState, useEffect } from 'react';
 
 export type NetworkQuality = 'high' | 'low';
 
+interface ConnectionInfo {
+  effectiveType?: string;
+  saveData?: boolean;
+  addEventListener?: (event: 'change', listener: () => void) => void;
+  removeEventListener?: (event: 'change', listener: () => void) => void;
+}
+
 export function useNetworkQuality() {
   const [quality, setQuality] = useState<NetworkQuality>('high');
 
   useEffect(() => {
+    const connection = (navigator as Navigator & { connection?: ConnectionInfo }).connection;
+
     const checkNetwork = () => {
-      // @ts-ignore - navigator.connection is not standard in all TS versions but works in Chrome/Edge
-      const conn = navigator.connection;
-      
-      if (conn) {
+      if (connection) {
         // If effective speed is 2g or 3g, or saveData is enabled
         if (
-          conn.effectiveType === '2g' || 
-          conn.effectiveType === '3g' || 
-          conn.saveData === true
+          connection.effectiveType === '2g' ||
+          connection.effectiveType === '3g' ||
+          connection.saveData === true
         ) {
           setQuality('low');
         } else {
@@ -27,12 +33,10 @@ export function useNetworkQuality() {
     checkNetwork();
 
     // Monitor changes
-    if ('connection' in navigator) {
-      // @ts-ignore
-      navigator.connection.addEventListener('change', checkNetwork);
+    if (connection?.addEventListener) {
+      connection.addEventListener('change', checkNetwork);
       return () => {
-        // @ts-ignore
-        navigator.connection.removeEventListener('change', checkNetwork);
+        connection.removeEventListener?.('change', checkNetwork);
       };
     }
   }, []);
