@@ -30,26 +30,6 @@
     "passwordHashHex": "c263c4f42176ab6f8ad2d63ce85a614c348bad2a3e600aa86d550074c2218c5cc1684711761f3675185609c8e751940cee5a80fe50f511a2040023ac8e1986e5"
   },
   {
-    "id": "p001",
-    "name": "Rahul Mishra",
-    "role": "passenger",
-    "username": "user001",
-    "cardNumber": "MPC-7842",
-    "identifier": "user001",
-    "passwordSaltHex": "db51f8c282ceeb470d675c999f6ac563",
-    "passwordHashHex": "42257b39f70351bc52259321fed60962e84ac42cd68bbfd4e19ad3cc27173d66995d2f52c9b0f9dc6ce8a65d8c18f9b8518111b2bf27708e8c5433b57245468b"
-  },
-  {
-    "id": "p002",
-    "name": "Ananya Singh",
-    "role": "passenger",
-    "username": "user002",
-    "cardNumber": "MPC-3391",
-    "identifier": "user002",
-    "passwordSaltHex": "fca576660f6d4199945278bb1164229e",
-    "passwordHashHex": "afe5975e5ca3cf545159955113531fb700b28c7cdf7f9f79185d6e87891f71a6bdf5a44bef09f614e5f2c5af73fee6e07c399fb38b11d065ec7d84e6141f8e9d"
-  },
-  {
     "id": "p003",
     "name": "Nafis Shaikh",
     "role": "passenger",
@@ -78,5 +58,15 @@
     "identifier": "aarishkhan@theeemcoe.org",
     "passwordSaltHex": "03b1f0582504ab2b1d1198eb5d7d4ce8",
     "passwordHashHex": "a9e2980458b39431a6eddd3a958b4ab1cc532610e82b5f191a08e46e943d2106e48d9a4eb64fabcac7a8d1de8f2c64c6f025fee257cc169fdfd4bcc4be4d4443"
+  },
+  {
+    "id": "p006",
+    "name": "Test Passenger",
+    "role": "passenger",
+    "username": "testuser3860",
+    "cardNumber": "MPC-7004",
+    "identifier": "testuser3860",
+    "passwordSaltHex": "7bd276da840d2dca3fb5209a812868dc",
+    "passwordHashHex": "dd79e3e9946302df8be3a0deecb606c10d586744c0c26bbf3ad891de84f4531d1e2602546d7448dbcbf18ffdf03431f12bcc743568ee70d7d8d2b1ed8b95b3ee"
   }
 ]

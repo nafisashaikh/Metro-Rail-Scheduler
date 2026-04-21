@@ -1,0 +1,42 @@
+[
+  {
+    "station": "Versova",
+    "line": "Line 1 – Versova–Ghatkopar",
+    "destination": "D N Nagar",
+    "departureTime": "12:00",
+    "platform": "3",
+    "status": "cancelled",
+    "trainNumber": "MRs-L1-101",
+    "id": "sch-1776770338491-5ad8d9"
+  },
+  {
+    "id": "sch-001",
+    "station": "Ghatkopar",
+    "line": "Aqua Line",
+    "destination": "Versova",
+    "departureTime": "08:05",
+    "platform": "2",
+    "status": "on-time",
+    "trainNumber": "MRS-AQ-101"
+  },
+  {
+    "id": "sch-002",
+    "station": "Dahisar East",
+    "line": "Yellow Line",
+    "destination": "Bandra Kurla Complex",
+    "departureTime": "08:12",
+    "platform": "1",
+    "status": "delayed",
+    "trainNumber": "MRS-YL-220"
+  },
+  {
+    "id": "sch-003",
+    "station": "CSMT Mumbai",
+    "line": "Deccan Express",
+    "destination": "Pune Junction",
+    "departureTime": "08:30",
+    "platform": "5",
+    "status": "on-time",
+    "trainNumber": "MRS-DEX-501"
+  }
+]

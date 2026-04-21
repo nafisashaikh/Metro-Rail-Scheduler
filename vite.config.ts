@@ -37,6 +37,10 @@ export default defineConfig({
         target: 'http://localhost:4001',
         changeOrigin: true,
       },
+      '/schedules': {
+        target: 'http://localhost:4001',
+        changeOrigin: true,
+      },
       '/realtime': {
         target: 'http://localhost:4001',
         changeOrigin: true,

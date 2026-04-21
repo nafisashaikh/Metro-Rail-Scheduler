@@ -4,6 +4,7 @@ import { MetroLine, Train, StationMetrics, Alert, UserRole, WeatherData, Passeng
 import { translations, Language } from '../i18n/translations';
 import { generateTrainsForStation, getStationMetrics } from '../data/metroData';
 import { generateRailwayTrains, getRailwayStationMetrics } from '../data/railwayData';
+import { createSchedule, fetchTrainsForStation } from '../services/schedules';
 import { MetroLineSelector } from './MetroLineSelector';
 import { StationSelector } from './StationSelector';
 import { ScheduleDisplay } from './ScheduleDisplay';
@@ -136,24 +137,98 @@ export function DashboardSection({
   const [activeTrainPosition, setActiveTrainPosition] = useState<[number, number] | null>(null);
   const [metrics, setMetrics] = useState<StationMetrics | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>(isPassenger ? 'journey' : 'schedule');
+  const [scheduleDestination, setScheduleDestination] = useState('');
+  const [scheduleDepartureTime, setScheduleDepartureTime] = useState('');
+  const [schedulePlatform, setSchedulePlatform] = useState('');
+  const [scheduleTrainNumber, setScheduleTrainNumber] = useState('');
+  const [scheduleStatus, setScheduleStatus] = useState<'on-time' | 'delayed' | 'cancelled'>('on-time');
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
 
   useEffect(() => {
-    if (selectedLine && selectedStation) {
-      const generated =
-        section === 'metro'
-          ? generateTrainsForStation(selectedStation, selectedLine, weather.condition)
-          : generateRailwayTrains(selectedStation, selectedLine, weather.condition);
-      setTrains(generated);
-      const m =
-        section === 'metro'
-          ? getStationMetrics(selectedStation)
-          : getRailwayStationMetrics(selectedStation);
-      setMetrics(m);
-    } else {
-      setTrains([]);
-      setMetrics(null);
+    let cancelled = false;
+
+    const run = async () => {
+      if (selectedLine && selectedStation) {
+        const m =
+          section === 'metro'
+            ? getStationMetrics(selectedStation)
+            : getRailwayStationMetrics(selectedStation);
+        setMetrics(m);
+
+        if (isPassenger) {
+          const generated =
+            section === 'metro'
+              ? generateTrainsForStation(selectedStation, selectedLine, weather.condition)
+              : generateRailwayTrains(selectedStation, selectedLine, weather.condition);
+          if (!cancelled) setTrains(generated);
+          return;
+        }
+
+        try {
+          const apiTrains = await fetchTrainsForStation({
+            station: selectedStation,
+            line: selectedLine.name,
+          });
+          if (!cancelled) setTrains(apiTrains);
+        } catch {
+          if (!cancelled) setTrains([]);
+        }
+      } else {
+        setTrains([]);
+        setMetrics(null);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedLine, selectedStation, section, isPassenger, weather.condition]);
+
+  const canManageSchedules = !isPassenger && (userRole === 'admin' || userRole === 'supervisor');
+
+  const handleCreateSchedule = async () => {
+    if (!selectedLine || !selectedStation) return;
+
+    setScheduleError('');
+
+    const destination = scheduleDestination.trim();
+    const departureTime = scheduleDepartureTime.trim();
+    const platform = schedulePlatform.trim();
+    const trainNumber = scheduleTrainNumber.trim();
+
+    if (!destination || !departureTime || !platform || !trainNumber) {
+      setScheduleError('Please fill all fields.');
+      return;
     }
-  }, [selectedLine, selectedStation, section]);
+
+    setScheduleSaving(true);
+    try {
+      await createSchedule({
+        station: selectedStation,
+        line: selectedLine.name,
+        destination,
+        departureTime,
+        platform,
+        status: scheduleStatus,
+        trainNumber,
+      });
+
+      const refreshed = await fetchTrainsForStation({ station: selectedStation, line: selectedLine.name });
+      setTrains(refreshed);
+
+      setScheduleDestination('');
+      setScheduleDepartureTime('');
+      setSchedulePlatform('');
+      setScheduleTrainNumber('');
+      setScheduleStatus('on-time');
+    } catch (e) {
+      setScheduleError(e instanceof Error ? e.message : 'Failed to create schedule.');
+    } finally {
+      setScheduleSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (showAlerts) setActiveTab('alerts');
@@ -618,11 +693,101 @@ export function DashboardSection({
                   <p className="text-sm">Choose a line and station from the sidebar</p>
                 </div>
               ) : (
-                <ScheduleDisplay
-                  trains={trains}
-                  station={selectedStation}
-                  lineColor={selectedLine?.color || '#3b82f6'}
-                />
+                <div className="space-y-4">
+                  {canManageSchedules && selectedLine && (
+                    <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/40 p-4">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div>
+                          <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">
+                            Create schedule
+                          </p>
+                          <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
+                            {selectedLine.name} · {selectedStation}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                        <div className="lg:col-span-2">
+                          <label className="text-[10px] text-slate-500 uppercase font-bold">Destination</label>
+                          <input
+                            value={scheduleDestination}
+                            onChange={(e) => setScheduleDestination(e.target.value)}
+                            placeholder="e.g., Ghatkopar"
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-slate-500 uppercase font-bold">Time</label>
+                          <input
+                            value={scheduleDepartureTime}
+                            onChange={(e) => setScheduleDepartureTime(e.target.value)}
+                            placeholder="HH:MM"
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-slate-500 uppercase font-bold">Platform</label>
+                          <input
+                            value={schedulePlatform}
+                            onChange={(e) => setSchedulePlatform(e.target.value)}
+                            placeholder="e.g., 2"
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-slate-500 uppercase font-bold">Status</label>
+                          <select
+                            title="Status"
+                            value={scheduleStatus}
+                            onChange={(e) => setScheduleStatus(e.target.value as 'on-time' | 'delayed' | 'cancelled')}
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm"
+                          >
+                            <option value="on-time">On time</option>
+                            <option value="delayed">Delayed</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </div>
+
+                        <div className="lg:col-span-2">
+                          <label className="text-[10px] text-slate-500 uppercase font-bold">Train number</label>
+                          <input
+                            value={scheduleTrainNumber}
+                            onChange={(e) => setScheduleTrainNumber(e.target.value)}
+                            placeholder="e.g., MRS-L1-101"
+                            className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {scheduleError && (
+                        <p className="mt-3 text-xs text-red-600 dark:text-red-400 font-semibold">
+                          {scheduleError}
+                        </p>
+                      )}
+
+                      <div className="mt-3 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={handleCreateSchedule}
+                          disabled={scheduleSaving}
+                          className="px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-sm font-semibold disabled:opacity-60"
+                        >
+                          {scheduleSaving ? 'Saving…' : 'Add Schedule'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <ScheduleDisplay
+                    trains={trains}
+                    station={selectedStation}
+                    lineColor={selectedLine?.color || '#3b82f6'}
+                  />
+                </div>
               )}
             </div>
           )}
