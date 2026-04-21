@@ -24,6 +24,7 @@ export { PassengerSignupPage } from './PassengerSignupPage';
 // ── Layout / Navigation ───────────────────────────────────────────────────────
 export { Header, PassengerHeader } from './Header';
 export { AnnouncementTicker } from './AnnouncementTicker';
+export { AdminPortal } from './AdminPortal';
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export { DashboardSection } from './DashboardSection';

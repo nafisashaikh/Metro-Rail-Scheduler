@@ -107,8 +107,7 @@ const getPassengerTabs = (t: PassengerTabLabels) => [
   { id: 'support', icon: Bot, label: t.support },
 ] as const;
 
-type StaffTabId = (typeof STAFF_TABS)[number]['id'];
-type TabId = StaffTabId | string;
+
 
 const CAPACITY_PIE_COLORS = ['#3b82f6', '#e5e7eb'];
 
@@ -128,15 +127,27 @@ export function DashboardSection({
 }: DashboardSectionProps) {
   const t = translations[lang as Language] || translations.en;
   const isPassenger = userRole === 'passenger';
+  const isEmployee = userRole === 'employee';
+  
   const PASSENGER_TABS = getPassengerTabs(t);
-  const TAB_LIST = isPassenger ? PASSENGER_TABS : STAFF_TABS;
+  
+  const ROLE_TABS = isEmployee 
+    ? [
+        { id: 'duties', label: 'My Duties', icon: Calendar },
+        { id: 'map', label: 'Live Network', icon: Map },
+        { id: 'incident', label: 'Report Incident', icon: AlertTriangle },
+        { id: 'broadcast', label: 'Messages', icon: Megaphone },
+      ]
+    : STAFF_TABS;
+    
+  const TAB_LIST = isPassenger ? PASSENGER_TABS : ROLE_TABS;
   const [selectedLine, setSelectedLine] = useState<MetroLine | null>(lines[0] || null);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
   const [trains, setTrains] = useState<Train[]>([]);
   const [activeTrain, setActiveTrain] = useState<Train | null>(null);
   const [activeTrainPosition, setActiveTrainPosition] = useState<[number, number] | null>(null);
   const [metrics, setMetrics] = useState<StationMetrics | null>(null);
-  const [activeTab, setActiveTab] = useState<TabId>(isPassenger ? 'journey' : 'schedule');
+  const [activeTab, setActiveTab] = useState<string>(isPassenger ? 'journey' : isEmployee ? 'duties' : 'schedule');
   const [scheduleDestination, setScheduleDestination] = useState('');
   const [scheduleDepartureTime, setScheduleDepartureTime] = useState('');
   const [schedulePlatform, setSchedulePlatform] = useState('');
@@ -789,6 +800,106 @@ export function DashboardSection({
                   />
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'duties' && (
+            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6 min-h-96">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold dark:text-white">Upcoming Duties & Roster</h3>
+                  <p className="text-sm opacity-70">View your assigned shifts and associated train lines.</p>
+                </div>
+                <button
+                  onClick={() => alert('Clocked in successfully!')}
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center gap-2 transform transition-all active:scale-95 shadow-lg shadow-blue-500/30"
+                >
+                  <MapPin size={18} /> GPS Clock-In
+                </button>
+              </div>
+              {!selectedStation ? (
+                <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                  <Calendar className="w-16 h-16 mb-4 opacity-30" />
+                  <p className="text-sm">Select a station from the sidebar to view current local rosters.</p>
+                </div>
+              ) : (
+                <div className="mt-4">
+                  <div className="mb-4 p-4 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 flex items-start gap-3">
+                    <Clock className="text-blue-500 w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 dark:text-blue-100">Next Shift: 14:00 - 22:00</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300">Station Manager - {selectedStation}</p>
+                    </div>
+                  </div>
+                  <ScheduleDisplay
+                    trains={trains.slice(0, 5)}
+                    station={selectedStation}
+                    lineColor={selectedLine?.color || '#3b82f6'}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'incident' && (
+            <div className="rounded-2xl border border-rose-100 dark:border-rose-900/30 bg-white dark:bg-[#110505] p-4 sm:p-6 min-h-96 shadow-md shadow-rose-900/5">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold dark:text-white text-rose-950">On-Ground Incident Report</h3>
+                  <p className="text-sm opacity-70">Directly alert supervisors and dispatch about live issues.</p>
+                </div>
+              </div>
+              
+              <form className="max-w-xl space-y-5" onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                onAddAlert({
+                  type: formData.get('type') as any,
+                  severity: formData.get('severity') as any,
+                  title: String(formData.get('title')),
+                  message: String(formData.get('message')),
+                  station: selectedStation || 'System',
+                  section: section
+                });
+                alert('Alert dispatched instantly to Supervisor board.');
+                e.currentTarget.reset();
+              }}>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold uppercase opacity-60 mb-2 block text-rose-900 dark:text-rose-100">Type</label>
+                    <select name="type" className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-sm">
+                      <option value="technical">Technical Fault</option>
+                      <option value="security">Security Issue</option>
+                      <option value="medical">Medical Emergency</option>
+                      <option value="delay">Crowd Overload</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold uppercase opacity-60 mb-2 block text-rose-900 dark:text-rose-100">Severity</label>
+                    <select name="severity" className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-sm text-red-600 font-semibold">
+                      <option value="warning">Warning / Minor</option>
+                      <option value="critical">CRITICAL / Requires Halt</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-xs font-bold uppercase opacity-60 mb-2 block text-rose-900 dark:text-rose-100">Incident Heading</label>
+                  <input name="title" required placeholder="e.g. Broken Fare Gate" className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-sm" />
+                </div>
+                
+                <div>
+                  <label className="text-xs font-bold uppercase opacity-60 mb-2 block text-rose-900 dark:text-rose-100">Detailed Description</label>
+                  <textarea name="message" required placeholder="Provide exact location and context..." rows={4} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-sm resize-none"></textarea>
+                </div>
+
+                <div className="pt-2">
+                  <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold text-sm hover:from-rose-600 hover:to-red-700 shadow-xl shadow-red-500/20 active:scale-95 transition-all">Submit Live Report</button>
+                </div>
+              </form>
             </div>
           )}
 

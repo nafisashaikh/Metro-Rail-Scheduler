@@ -21,6 +21,7 @@ import {
   PassengerHeader,
   DashboardSection,
   AnnouncementTicker,
+  AdminPortal,
 } from './components';
 import { PassengerSignupPage } from './components/PassengerSignupPage';
 import { apiUrl } from './config/api';
@@ -327,20 +328,24 @@ export default function App() {
               </div>
             </div>
 
-            <DashboardSection
-              key={staffSection}
-              section={staffSection}
-              lines={staffSection === 'metro' ? mumbaiMetroLines : maharashtraRailwayLines}
-              alerts={alerts}
-              onResolveAlert={handleResolveAlert}
-              onAddAlert={handleAddAlert}
-              userRole={staffUser.role}
-              weather={getWeatherForSection(staffSection)}
-              isDark={isDark}
-              showAlerts={showAlerts}
-              onCloseAlerts={() => setShowAlerts(false)}
-              lang={lang}
-            />
+            {staffUser.role === 'admin' ? (
+              <AdminPortal />
+            ) : (
+              <DashboardSection
+                key={staffSection}
+                section={staffSection}
+                lines={staffSection === 'metro' ? mumbaiMetroLines : maharashtraRailwayLines}
+                alerts={alerts}
+                onResolveAlert={handleResolveAlert}
+                onAddAlert={handleAddAlert}
+                userRole={staffUser.role}
+                weather={getWeatherForSection(staffSection)}
+                isDark={isDark}
+                showAlerts={showAlerts}
+                onCloseAlerts={() => setShowAlerts(false)}
+                lang={lang}
+              />
+            )}
           </main>
 
           {/* ── Footer ── */}

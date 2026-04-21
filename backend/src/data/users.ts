@@ -23,9 +23,10 @@ const DEFAULT_USERS: StoredUser[] = [
     employeeId: 'MRS-A-001',
     department: 'Administration',
     identifier: 'MRS-A-001',
-    passwordSaltHex: '83747d63d6b2ec18638cca95b05ce107',
+    // Password: Metro@Admin1
+    passwordSaltHex: '8c6e02c5c40e86b518afcc5f3af81430',
     passwordHashHex:
-      'c8756c07405f7a18fde21788df21d9eaf152bd12559da86bb11d94310d213219096eefc0dec75a90cfb264a9cd6aa7779f9b232f70e771677160487147e6d605',
+      '6a05d22b4c7c80f6d1078a008afea00d5f621da335f4d8fcd412781d6de95580e1029a06a2e65a7aacb89db8ee75563f59ae672de70b1218325e8b22c2fd26e0',
   },
   {
     id: '2',
@@ -34,9 +35,10 @@ const DEFAULT_USERS: StoredUser[] = [
     employeeId: 'MRS-S-042',
     department: 'Operations',
     identifier: 'MRS-S-042',
-    passwordSaltHex: '49d9588e9a59a5591eb47bd90ea47ed5',
+    // Password: Metro@Sup1
+    passwordSaltHex: '7aeaabbe30a175b91798aa63f9fd0654',
     passwordHashHex:
-      'ef8782389c886daf8cfe0013408deb2c1511f24621bbbfc2c2026b444984904e81415740e262f04620adcc3de3ea4cf7045bad2bce567bdc46f5e56afb55ee09',
+      '5f3abc0947acc1df55b4a518691bd2f677b302eac6da8ad885d2ed9f0a0b22852ad6ac48f623b8915c8fad1eb0fd375a0eb55179090520061a6fc08c00e74cd8',
   },
   {
     id: '3',
@@ -45,31 +47,10 @@ const DEFAULT_USERS: StoredUser[] = [
     employeeId: 'MRS-E-187',
     department: 'Station Management',
     identifier: 'MRS-E-187',
-    passwordSaltHex: 'e604018c7e2b4d529a89b1ff308df518',
+    // Password: Metro@Emp1
+    passwordSaltHex: '03bc59f0f7f0bf66e2ea6c5aca2f7ae6',
     passwordHashHex:
-      'c65441305db9692f115371d55d565f01a2911d778d78348652b58926741c6a82c3592b2b6f8d91247e84c4b268da2aafa3bb6c68f024cde12dc5fa7090e9d1e7',
-  },
-  {
-    id: 'p001',
-    name: 'Rahul Mishra',
-    role: 'passenger',
-    username: 'user001',
-    cardNumber: 'MPC-7842',
-    identifier: 'user001',
-    passwordSaltHex: 'b7aa5cbeb865340125565355cd7c904d',
-    passwordHashHex:
-      '34a2f96ddf1bd39c81795eff62d0d549a0a4d8337b65b729fd562c00fd14ea775e966a628e763d25676cadfe4d94ba854a26fc083257d8bb3f79fb51e257600d',
-  },
-  {
-    id: 'p002',
-    name: 'Ananya Singh',
-    role: 'passenger',
-    username: 'user002',
-    cardNumber: 'MPC-3391',
-    identifier: 'user002',
-    passwordSaltHex: '0cf497d5fd59bd90e399a373d9f6465b',
-    passwordHashHex:
-      '9fb1fc026145f32b683554d0b831f3373761fab47606ef1095fe025441a5e1124a780a30a06ebaeda0ce41460576281a8204b26663b9ed958208815bfc7ea071',
+      '651ad0b257f923f09f419bb68bbb3c1ce775ec5f7e2f0af59665c09c40a5511b701e6ba16d3278d45c0ff75a776b14c951e9241a4e4d81c7df111c812c974e9e',
   },
 ];
 

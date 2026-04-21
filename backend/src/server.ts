@@ -31,3 +31,4 @@ function startServer(startPort: number): void {
 }
 
 startServer(env.port);
+// hot restart trigger

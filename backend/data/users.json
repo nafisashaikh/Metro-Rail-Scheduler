@@ -6,8 +6,8 @@
     "employeeId": "MRS-A-001",
     "department": "Administration",
     "identifier": "MRS-A-001",
-    "passwordSaltHex": "9f469eb85e23717fb0e3eda1be321d38",
-    "passwordHashHex": "9c23c17b39ef68de8761454789eec36911cbf6f09baa372cd57e42b96cd81a5e10a199f6ca78004666970c30470a4f2c2ca215fd9a819c297a02468d2adbcbc0"
+    "passwordSaltHex": "8c6e02c5c40e86b518afcc5f3af81430",
+    "passwordHashHex": "6a05d22b4c7c80f6d1078a008afea00d5f621da335f4d8fcd412781d6de95580e1029a06a2e65a7aacb89db8ee75563f59ae672de70b1218325e8b22c2fd26e0"
   },
   {
     "id": "2",
@@ -16,8 +16,8 @@
     "employeeId": "MRS-S-042",
     "department": "Operations",
     "identifier": "MRS-S-042",
-    "passwordSaltHex": "b3c20b4fa7961d9962af7e2566e5e7a3",
-    "passwordHashHex": "3ccc48817e34c549fd521127d4fde217f0c5dee650ccbeaf45182601bd16cbb954d4985a0ad82c142f2807da199855fda6ace098484e6e27b8097849afacf887"
+    "passwordSaltHex": "7aeaabbe30a175b91798aa63f9fd0654",
+    "passwordHashHex": "5f3abc0947acc1df55b4a518691bd2f677b302eac6da8ad885d2ed9f0a0b22852ad6ac48f623b8915c8fad1eb0fd375a0eb55179090520061a6fc08c00e74cd8"
   },
   {
     "id": "3",
@@ -26,8 +26,8 @@
     "employeeId": "MRS-E-187",
     "department": "Station Management",
     "identifier": "MRS-E-187",
-    "passwordSaltHex": "9044c2adf57962eae97d9566891ce1b2",
-    "passwordHashHex": "c263c4f42176ab6f8ad2d63ce85a614c348bad2a3e600aa86d550074c2218c5cc1684711761f3675185609c8e751940cee5a80fe50f511a2040023ac8e1986e5"
+    "passwordSaltHex": "03bc59f0f7f0bf66e2ea6c5aca2f7ae6",
+    "passwordHashHex": "651ad0b257f923f09f419bb68bbb3c1ce775ec5f7e2f0af59665c09c40a5511b701e6ba16d3278d45c0ff75a776b14c951e9241a4e4d81c7df111c812c974e9e"
   },
   {
     "id": "p003",
@@ -68,5 +68,15 @@
     "identifier": "testuser3860",
     "passwordSaltHex": "7bd276da840d2dca3fb5209a812868dc",
     "passwordHashHex": "dd79e3e9946302df8be3a0deecb606c10d586744c0c26bbf3ad891de84f4531d1e2602546d7448dbcbf18ffdf03431f12bcc743568ee70d7d8d2b1ed8b95b3ee"
+  },
+  {
+    "id": "p007",
+    "name": "API Tester",
+    "role": "passenger",
+    "username": "testuser2782",
+    "cardNumber": "MPC-7005",
+    "identifier": "testuser2782",
+    "passwordSaltHex": "f6de61c4cbbae519ca1422e9f1eeebc0",
+    "passwordHashHex": "23bbb0a0db3ad0f249fa245d0da1a33ebc89cb7b14c7d55bec6bcfeb1cb2c942fcd5a58362ac5c2351925a801f2b13e0d45cb0056821b5abff5b5c4f827f75ca"
   }
 ]
