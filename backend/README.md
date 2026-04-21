@@ -24,7 +24,7 @@ Backend API for authentication and protected schedule access.
    npm run dev
    ```
 
-Default server: `http://localhost:4000`
+Default server: `http://localhost:4001` (matches Vite dev proxy)
 
 ## API
 
