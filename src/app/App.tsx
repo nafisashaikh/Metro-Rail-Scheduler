@@ -329,7 +329,14 @@ export default function App() {
             </div>
 
             {staffUser.role === 'admin' ? (
-              <AdminPortal />
+              <AdminPortal 
+                alerts={alerts}
+                onResolveAlert={handleResolveAlert}
+                onAddAlert={handleAddAlert}
+                section={staffSection}
+                showAlerts={showAlerts}
+                onCloseAlerts={() => setShowAlerts(false)}
+              />
             ) : (
               <DashboardSection
                 key={staffSection}
