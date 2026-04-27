@@ -1,5 +1,4 @@
 import express from 'express';
-import fetch from 'node-fetch';
 import * as GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 
 const router = express.Router();
@@ -304,11 +303,11 @@ const realGtfsService = new RealGtfsService();
 
 // Update data every 30 seconds
 setInterval(() => {
-  realGtfsService.updateRealtimeData();
+  realGtfsService.updateRealtimeData().catch(console.error);
 }, 30000);
 
 // Initial data load
-realGtfsService.updateRealtimeData();
+realGtfsService.updateRealtimeData().catch(console.error);
 
 // Routes
 router.get('/arrivals/:stationId', async (req, res) => {
