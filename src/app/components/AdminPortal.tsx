@@ -137,9 +137,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
 
   const [staffList, setStaffList] = useState<StaffMember[]>([
     { id: 'MRS-A-001', name: 'Rajesh Kumar', role: 'Admin', status: 'Active' },
+    { id: 'MRS-A-002', name: 'Sunita Desai', role: 'Admin', status: 'Active' },
     { id: 'MRS-S-042', name: 'Priya Sharma', role: 'Supervisor', status: 'Active' },
+    { id: 'MRS-S-045', name: 'Vikram Singh', role: 'Supervisor', status: 'Active' },
+    { id: 'MRS-S-048', name: 'Anita Patel', role: 'Supervisor', status: 'Inactive' },
     { id: 'MRS-E-187', name: 'Amit Patil', role: 'Employee', status: 'Inactive' },
     { id: 'MRS-E-192', name: 'Sita Verma', role: 'Employee', status: 'Active' },
+    { id: 'MRS-E-195', name: 'Rahul Joshi', role: 'Employee', status: 'Active' },
+    { id: 'MRS-E-201', name: 'Deepa Nair', role: 'Employee', status: 'Active' },
+    { id: 'MRS-E-210', name: 'Suresh Menon', role: 'Employee', status: 'Active' },
   ]);
   const [editingStaffId, setEditingStaffId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<StaffMember>>({});
@@ -321,6 +327,91 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                   <Area type="monotone" dataKey="health" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorHealth)" />
                 </AreaChart>
               </ResponsiveContainer>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
+              <div className="admin-panel" style={{ padding: '20px' }}>
+                <div className="panel-header" style={{ marginBottom: 16, fontSize: 16 }}>Live Train Health Data</div>
+                <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', borderRadius: 8, border: '1px solid var(--glass-border)', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead style={{ backgroundColor: 'rgba(100,100,100,0.05)' }}>
+                      <tr>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Train ID</th>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Line</th>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Status</th>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Health</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { id: 'MRS-AQ-101', line: 'Aqua Line', status: 'On Time', health: 96 },
+                        { id: 'MRS-YL-220', line: 'Yellow Line', status: 'Delayed', health: 82 },
+                        { id: 'MRS-RL-305', line: 'Red Line', status: 'On Time', health: 91 },
+                        { id: 'MRS-CL-808', line: 'Central Line', status: 'Delayed', health: 74 },
+                        { id: 'MRS-R-101', line: 'Western', status: 'Cancelled', health: 45 },
+                        { id: 'MRS-AQ-999', line: 'Aqua Line', status: 'On Time', health: 99 },
+                      ].map(t => (
+                        <tr key={t.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                          <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: 600 }}>{t.id}</td>
+                          <td style={{ padding: '12px' }}>{t.line}</td>
+                          <td style={{ padding: '12px' }}>
+                            <span style={{ color: t.status === 'On Time' ? '#10b981' : t.status === 'Delayed' ? '#f59e0b' : '#ef4444', fontWeight: 600 }}>{t.status}</span>
+                          </td>
+                          <td style={{ padding: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ flex: 1, height: 6, background: 'rgba(100,100,100,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${t.health}%`, background: t.health > 85 ? '#10b981' : t.health > 60 ? '#f59e0b' : '#ef4444' }} />
+                              </div>
+                              <span style={{ fontSize: 11, opacity: 0.8 }}>{t.health}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="admin-panel" style={{ padding: '20px' }}>
+                <div className="panel-header" style={{ marginBottom: 16, fontSize: 16 }}>Live Station Analytics</div>
+                <div style={{ backgroundColor: 'rgba(0,0,0,0.02)', borderRadius: 8, border: '1px solid var(--glass-border)', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead style={{ backgroundColor: 'rgba(100,100,100,0.05)' }}>
+                      <tr>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Station</th>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Footfall</th>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Crowd Lvl</th>
+                        <th style={{ padding: '12px', fontWeight: 600, opacity: 0.7 }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { name: 'Ghatkopar', pass: '14,208', crowd: 'High', status: 'Critical' },
+                        { name: 'Andheri', pass: '11,045', crowd: 'Medium', status: 'Stable' },
+                        { name: 'CSMT Mumbai', pass: '22,400', crowd: 'Severe', status: 'Warning' },
+                        { name: 'Dahisar East', pass: '4,102', crowd: 'Low', status: 'Stable' },
+                        { name: 'Kalyan', pass: '18,330', crowd: 'High', status: 'Warning' },
+                        { name: 'Versova', pass: '6,211', crowd: 'Low', status: 'Stable' },
+                      ].map(s => (
+                        <tr key={s.name} style={{ borderBottom: '1px solid var(--glass-border)' }}>
+                          <td style={{ padding: '12px', fontWeight: 600 }}>{s.name}</td>
+                          <td style={{ padding: '12px', fontFamily: 'monospace' }}>{s.pass}</td>
+                          <td style={{ padding: '12px' }}>
+                            <span style={{ 
+                              padding: '2px 6px', borderRadius: 4, fontSize: 10, textTransform: 'uppercase', fontWeight: 700,
+                              background: s.crowd === 'Low' ? 'rgba(16,185,129,0.1)' : s.crowd === 'Medium' ? 'rgba(59,130,246,0.1)' : 'rgba(245,158,11,0.1)',
+                              color: s.crowd === 'Low' ? '#10b981' : s.crowd === 'Medium' ? '#3b82f6' : '#f59e0b'
+                            }}>{s.crowd}</span>
+                          </td>
+                          <td style={{ padding: '12px' }}>
+                            <span style={{ color: s.status === 'Stable' ? '#10b981' : s.status === 'Warning' ? '#f59e0b' : '#ef4444', fontWeight: 600 }}>{s.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         )}
