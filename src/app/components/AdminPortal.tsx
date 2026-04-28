@@ -834,7 +834,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                   {scheduleRecords.map((rec) => {
                     const isEditing = editingScheduleId === rec.id && scheduleEdit;
                     return (
-                      <tr key={rec.id}>
+                      <tr key={rec.id} data-testid={`schedule-row-${rec.id}`}>
                         <td>
                           <span className={`schedule-pill ${rec.published ? '' : 'off'}`}>
                             {rec.published ? 'Published' : 'Unpublished'}
@@ -844,6 +844,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                           {isEditing ? (
                             <input
                               className="broadcast-input"
+                              aria-label="Schedule line"
+                              data-testid={`schedule-edit-line-${rec.id}`}
                               value={scheduleEdit.line}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, line: e.target.value })}
                             />
@@ -855,6 +857,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                           {isEditing ? (
                             <input
                               className="broadcast-input"
+                              aria-label="Schedule from station"
+                              data-testid={`schedule-edit-from-${rec.id}`}
                               value={scheduleEdit.station}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, station: e.target.value })}
                             />
@@ -866,6 +870,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                           {isEditing ? (
                             <input
                               className="broadcast-input"
+                              aria-label="Schedule to station"
+                              data-testid={`schedule-edit-to-${rec.id}`}
                               value={scheduleEdit.destination}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, destination: e.target.value })}
                             />
@@ -878,6 +884,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                             <input
                               className="broadcast-input"
                               type="time"
+                              aria-label="Schedule departure time"
+                              data-testid={`schedule-edit-departure-${rec.id}`}
                               value={scheduleEdit.departureTime}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, departureTime: e.target.value })}
                             />
@@ -890,6 +898,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                             <input
                               className="broadcast-input"
                               type="time"
+                              aria-label="Schedule arrival time"
+                              data-testid={`schedule-edit-arrival-${rec.id}`}
                               value={scheduleEdit.arrivalTime}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, arrivalTime: e.target.value })}
                             />
@@ -901,6 +911,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                           {isEditing ? (
                             <input
                               className="broadcast-input"
+                              aria-label="Schedule platform"
+                              data-testid={`schedule-edit-platform-${rec.id}`}
                               value={scheduleEdit.platform}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, platform: e.target.value })}
                             />
@@ -912,6 +924,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                           {isEditing ? (
                             <input
                               className="broadcast-input"
+                              aria-label="Schedule train number"
+                              data-testid={`schedule-edit-trainNumber-${rec.id}`}
                               value={scheduleEdit.trainNumber}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, trainNumber: e.target.value })}
                             />
@@ -924,6 +938,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                             <input
                               className="broadcast-input"
                               type="number"
+                              aria-label="Schedule headway minutes"
+                              data-testid={`schedule-edit-headway-${rec.id}`}
                               value={scheduleEdit.headwayMinutes}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, headwayMinutes: e.target.value })}
                               min={1}
@@ -963,12 +979,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                               <input
                                 className="broadcast-input"
                                 type="date"
+                                aria-label="Schedule effective from"
+                                data-testid={`schedule-edit-effectiveFrom-${rec.id}`}
                                 value={scheduleEdit.effectiveFrom}
                                 onChange={(e) => setScheduleEdit({ ...scheduleEdit, effectiveFrom: e.target.value })}
                               />
                               <input
                                 className="broadcast-input"
                                 type="date"
+                                aria-label="Schedule effective to"
+                                data-testid={`schedule-edit-effectiveTo-${rec.id}`}
                                 value={scheduleEdit.effectiveTo}
                                 onChange={(e) => setScheduleEdit({ ...scheduleEdit, effectiveTo: e.target.value })}
                               />
@@ -981,6 +1001,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                           {isEditing ? (
                             <select
                               className="broadcast-select"
+                              aria-label="Schedule status"
+                              data-testid={`schedule-edit-status-${rec.id}`}
                               value={scheduleEdit.status}
                               onChange={(e) => setScheduleEdit({ ...scheduleEdit, status: e.target.value as ScheduleStatus })}
                               title="Status"
@@ -1000,6 +1022,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                                 <button
                                   type="button"
                                   className="schedule-link"
+                                  data-testid={`schedule-save-${rec.id}`}
                                   onClick={() => {
                                     void (async () => {
                                       if (!editingScheduleId || !scheduleEdit) return;
@@ -1050,6 +1073,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                                 <button
                                   type="button"
                                   className="schedule-link"
+                                  data-testid={`schedule-cancel-${rec.id}`}
                                   onClick={() => {
                                     setEditingScheduleId(null);
                                     setScheduleEdit(null);
@@ -1063,6 +1087,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                                 <button
                                   type="button"
                                   className="schedule-link"
+                                  data-testid={`schedule-confirm-delete-${rec.id}`}
                                   onClick={() => {
                                     void (async () => {
                                       setScheduleError('');
@@ -1084,6 +1109,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                                 <button
                                   type="button"
                                   className="schedule-link"
+                                  data-testid={`schedule-cancel-delete-${rec.id}`}
                                   onClick={() => setPendingDeleteScheduleId(null)}
                                 >
                                   Cancel
@@ -1094,6 +1120,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                                 <button
                                   type="button"
                                   className="schedule-link"
+                                  data-testid={`schedule-edit-${rec.id}`}
                                   onClick={() => {
                                     setEditingScheduleId(rec.id);
                                     setScheduleEdit({
@@ -1118,6 +1145,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                                 <button
                                   type="button"
                                   className="schedule-link"
+                                  data-testid={`schedule-toggle-published-${rec.id}`}
                                   onClick={() => {
                                     void (async () => {
                                       setScheduleError('');
@@ -1138,6 +1166,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                                 <button
                                   type="button"
                                   className="schedule-link"
+                                  data-testid={`schedule-delete-${rec.id}`}
                                   onClick={() => setPendingDeleteScheduleId(rec.id)}
                                 >
                                   Delete
