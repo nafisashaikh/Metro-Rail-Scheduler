@@ -150,10 +150,13 @@ export async function createSchedule(input: {
     body: JSON.stringify(input),
   });
 
-  const data = (await response.json()) as { train?: Train; error?: string };
+  const data = (await response.json()) as { train?: Train; error?: string; details?: any[] };
 
   if (!response.ok || !data.train) {
-    throw new Error(data.error ?? `Failed to create schedule (${response.status})`);
+    const errorMsg = data.details?.length 
+      ? `${data.error}: ${data.details[0].message}`
+      : (data.error ?? `Failed to create schedule (${response.status})`);
+    throw new Error(errorMsg);
   }
 
   return data.train;

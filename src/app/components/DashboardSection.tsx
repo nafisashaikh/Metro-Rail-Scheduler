@@ -43,7 +43,8 @@ import {
   Compass,
   WifiOff,
   ZapOff,
-  Megaphone
+  Megaphone,
+  ClipboardList
 } from 'lucide-react';
 import {
   BarChart,
@@ -75,15 +76,22 @@ interface DashboardSectionProps {
   lang?: string;
 }
 
-// Staff tabs
-const STAFF_TABS = [
+const ADMIN_TABS = [
   { id: 'schedule', label: 'Schedule', icon: Calendar },
   { id: 'map', label: 'Satellite Map', icon: Map },
   { id: 'health', label: 'Train Health', icon: Activity },
   { id: 'analytics', label: 'Analytics', icon: BarChart2 },
   { id: 'alerts', label: 'Alerts', icon: Bell },
-  { id: 'medical', label: 'Medical Guide', icon: Stethoscope },
   { id: 'broadcast', label: 'Broadcast', icon: Megaphone },
+] as const;
+
+const SUPERVISOR_TABS = [
+  { id: 'schedule', label: 'Schedule', icon: Calendar },
+  { id: 'map', label: 'Satellite Map', icon: Map },
+  { id: 'health', label: 'Train Health', icon: Activity },
+  { id: 'alerts', label: 'Alerts', icon: Bell },
+  { id: 'medical', label: 'Medical Guide', icon: Stethoscope },
+  { id: 'tasks', label: 'Shift Tasks', icon: ClipboardList },
 ] as const;
 
 // Passenger tabs — full feature set including Medical
@@ -138,9 +146,16 @@ export function DashboardSection({
         { id: 'incident', label: 'Report Incident', icon: AlertTriangle },
         { id: 'broadcast', label: 'Messages', icon: Megaphone },
       ]
-    : STAFF_TABS;
+    : userRole === 'admin' ? ADMIN_TABS : SUPERVISOR_TABS;
     
-  const TAB_LIST = isPassenger ? PASSENGER_TABS : ROLE_TABS;
+  const MAPPED_ROLE_TABS = ROLE_TABS.map(tab => {
+    if (tab.id === 'health') {
+      return { ...tab, label: section === 'metro' ? 'Metro Health' : 'Train Health' };
+    }
+    return tab;
+  });
+    
+  const TAB_LIST = isPassenger ? PASSENGER_TABS : MAPPED_ROLE_TABS;
   const [selectedLine, setSelectedLine] = useState<MetroLine | null>(lines[0] || null);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
   const [trains, setTrains] = useState<Train[]>([]);
@@ -211,6 +226,11 @@ export function DashboardSection({
 
     if (!destination || !departureTime || !platform || !trainNumber) {
       setScheduleError('Please fill all fields.');
+      return;
+    }
+
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(departureTime)) {
+      setScheduleError('Departure time must be in HH:MM format (e.g., 08:30 or 14:45).');
       return;
     }
 
@@ -672,10 +692,11 @@ export function DashboardSection({
           </div>
         )}
 
-        {/* Staff Task Manager */}
-        <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4">
-          <StaffTasks />
-        </div>
+        {isEmployee && (
+          <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4">
+            <StaffTasks />
+          </div>
+        )}
 
         <WeatherWidget weather={weather} />
       </div>
@@ -934,7 +955,7 @@ export function DashboardSection({
               {!selectedStation ? (
                 <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-12 flex flex-col items-center text-slate-400">
                   <Activity className="w-16 h-16 mb-4 opacity-30" />
-                  <p className="text-sm">Select a station to view train health data</p>
+                  <p className="text-sm">Select a station to view {section === 'metro' ? 'metro' : 'train'} health data</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1127,6 +1148,20 @@ export function DashboardSection({
               style={{ minHeight: 480 }}
             >
               <MedicalPrescription selectedStation={selectedStation} />
+            </div>
+          )}
+
+          {activeTab === 'tasks' && (
+            <div className="max-w-xl mx-auto py-6">
+              <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6 min-h-[480px]">
+                <div className="flex items-center gap-2 mb-6">
+                  <ClipboardList className="w-6 h-6 text-slate-600 dark:text-slate-300" />
+                  <h3 className="text-xl text-slate-900 dark:text-white font-bold">
+                    Shift Tasks & Delegation
+                  </h3>
+                </div>
+                <StaffTasks />
+              </div>
             </div>
           )}
         </div>

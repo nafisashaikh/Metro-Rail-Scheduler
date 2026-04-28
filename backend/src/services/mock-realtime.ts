@@ -140,32 +140,64 @@ export class MockRealtimeService {
     const alerts: any[] = [];
     const now = Date.now();
     
-    // Random service disruptions (5% chance)
-    if (Math.random() < 0.05) {
-      const lines = metroLines;
-      const randomLine = lines[Math.floor(Math.random() * lines.length)];
-      
+    // Always provide some base alerts for "much mock data" request
+    alerts.push({
+      id: `alert-base-1`,
+      severity: 'medium',
+      type: 'maintenance',
+      title: 'Scheduled Maintenance',
+      message: 'Escalator maintenance at Andheri station (Platform 1). Use alternate exits.',
+      affectedLines: ['metro-line-1'],
+      startTime: now - (2 * 60 * 60 * 1000)
+    });
+
+    alerts.push({
+      id: `alert-base-2`,
+      severity: 'low',
+      type: 'info',
+      title: 'New Smart Card Kiosks',
+      message: 'New automated smart card recharge kiosks are now operational at all Line 7 stations.',
+      affectedLines: ['metro-line-7'],
+      startTime: now - (12 * 60 * 60 * 1000)
+    });
+
+    // Random service disruptions (increased to 40% chance for demo)
+    if (Math.random() < 0.4) {
+      const randomLine = metroLines[Math.floor(Math.random() * metroLines.length)];
       alerts.push({
-        id: `alert-${now}`,
+        id: `alert-disruption-${now}`,
         severity: 'high',
         type: 'service_disruption',
-        title: `${randomLine.name} Line Delay`,
-        message: `Technical fault between ${randomLine.stations[2].name} and ${randomLine.stations[3].name}. Expect 10-15 minute delays.`,
+        title: `${randomLine.name} Signal Issue`,
+        message: `Intermittent signaling issues reported near terminal stations. Expect 5-10 minute delays.`,
         affectedLines: [randomLine.id],
         startTime: now,
-        estimatedEndTime: now + (20 * 60 * 1000) // 20 minutes
+        estimatedEndTime: now + (30 * 60 * 1000)
       });
     }
     
-    // Platform changes (2% chance)
-    if (Math.random() < 0.02) {
+    // Crowd Alerts (30% chance)
+    if (Math.random() < 0.3) {
       alerts.push({
-        id: `platform-${now}`,
+        id: `alert-crowd-${now}`,
         severity: 'medium',
-        type: 'platform_change',
-        title: 'Platform Change',
-        message: 'Airport Express now departing from Platform 2 instead of Platform 1',
-        affectedLines: ['line1'],
+        type: 'crowd_control',
+        title: 'Heavy Passenger Flow',
+        message: 'High congestion levels at Dadar interchange. Station staff implementing phased entry.',
+        affectedLines: ['metro-line-3', 'central-line'],
+        startTime: now
+      });
+    }
+
+    // Weather impact
+    if (Math.random() < 0.2) {
+      alerts.push({
+        id: `alert-weather-${now}`,
+        severity: 'medium',
+        type: 'weather',
+        title: 'Weather Precaution',
+        message: 'Pre-monsoon maintenance checks active. Trains may operate at restricted speeds on elevated sections.',
+        affectedLines: ['metro-line-1', 'metro-line-2a', 'metro-line-7'],
         startTime: now
       });
     }
