@@ -155,14 +155,10 @@ async function handleApiRequest(request) {
       
       return networkResponse;
     }
-    
-    // For non-GET requests or auth endpoints, return the actual server response (e.g. 401, 400)
-    // to prevent swallowing errors and incorrectly falling back to a 503 Offline block.
-    if (request.method !== 'GET' || url.pathname.includes('/auth/')) {
-      return networkResponse;
-    }
 
-    throw new Error(`Network response not ok: ${networkResponse.status}`);
+    // Important: Do NOT treat non-2xx HTTP responses as "offline".
+    // Only fall back to cache when the network request itself fails (throws).
+    return networkResponse;
     
   } catch (error) {
     console.log('[SW] Network failed, trying cache:', url.pathname);

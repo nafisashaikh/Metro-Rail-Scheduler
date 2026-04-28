@@ -1,5 +1,6 @@
 [
   {
+    "id": "sch-1777376974709-41a4cd",
     "station": "Virar",
     "line": "Western",
     "destination": "Dadar",
@@ -20,10 +21,10 @@
     ],
     "effectiveFrom": "2026-04-29",
     "effectiveTo": "2026-04-29",
-    "published": true,
-    "id": "sch-1777376974709-41a4cd"
+    "published": true
   },
   {
+    "id": "sch-1777376842922-45c263",
     "station": "Ghatkopar",
     "line": "Aqua Line",
     "destination": "Versova",
@@ -43,8 +44,7 @@
       "sun"
     ],
     "effectiveFrom": "2026-04-28",
-    "published": false,
-    "id": "sch-1777376842922-45c263"
+    "published": false
   },
   {
     "id": "sch-1776772905108-450d08",
