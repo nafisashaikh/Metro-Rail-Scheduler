@@ -4,15 +4,24 @@ import { fileURLToPath } from 'node:url';
 
 export type ScheduleStatus = 'on-time' | 'delayed' | 'cancelled';
 
+export type ScheduleDayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
 export interface ScheduleRecord {
   id: string;
   station: string;
   line: string;
   destination: string;
   departureTime: string; // HH:MM
+  arrivalTime?: string; // HH:MM
   platform: string;
   status: ScheduleStatus;
   trainNumber: string;
+
+  headwayMinutes?: number;
+  daysOfWeek: ScheduleDayOfWeek[];
+  effectiveFrom?: string; // YYYY-MM-DD
+  effectiveTo?: string; // YYYY-MM-DD
+  published: boolean;
 }
 
 export interface ApiTrain {
@@ -58,9 +67,15 @@ const DEFAULT_SCHEDULES: ScheduleRecord[] = [
     line: 'Aqua Line',
     destination: 'Versova',
     departureTime: '08:05',
+    arrivalTime: '08:42',
     platform: '2',
     status: 'on-time',
     trainNumber: 'MRS-AQ-101',
+    headwayMinutes: 10,
+    daysOfWeek: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+    effectiveFrom: undefined,
+    effectiveTo: undefined,
+    published: true,
   },
   {
     id: 'sch-002',
@@ -68,9 +83,15 @@ const DEFAULT_SCHEDULES: ScheduleRecord[] = [
     line: 'Yellow Line',
     destination: 'Bandra Kurla Complex',
     departureTime: '08:12',
+    arrivalTime: '08:55',
     platform: '1',
     status: 'delayed',
     trainNumber: 'MRS-YL-220',
+    headwayMinutes: 12,
+    daysOfWeek: ['mon', 'tue', 'wed', 'thu', 'fri'],
+    effectiveFrom: undefined,
+    effectiveTo: undefined,
+    published: true,
   },
   {
     id: 'sch-003',
@@ -78,11 +99,57 @@ const DEFAULT_SCHEDULES: ScheduleRecord[] = [
     line: 'Deccan Express',
     destination: 'Pune Junction',
     departureTime: '08:30',
+    arrivalTime: '11:35',
     platform: '5',
     status: 'on-time',
     trainNumber: 'MRS-DEX-501',
+    headwayMinutes: undefined,
+    daysOfWeek: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
+    effectiveFrom: undefined,
+    effectiveTo: undefined,
+    published: true,
   },
 ];
+
+const ALL_DAYS: ScheduleDayOfWeek[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+function normalizeScheduleRecord(input: any): ScheduleRecord | null {
+  if (!input || typeof input !== 'object') return null;
+  const id = typeof input.id === 'string' ? input.id : null;
+  const station = typeof input.station === 'string' ? input.station : null;
+  const line = typeof input.line === 'string' ? input.line : null;
+  const destination = typeof input.destination === 'string' ? input.destination : null;
+  const departureTime = typeof input.departureTime === 'string' ? input.departureTime : null;
+  const platform = typeof input.platform === 'string' ? input.platform : null;
+  const status = input.status === 'on-time' || input.status === 'delayed' || input.status === 'cancelled' ? input.status : 'on-time';
+  const trainNumber = typeof input.trainNumber === 'string' ? input.trainNumber : null;
+
+  if (!id || !station || !line || !destination || !departureTime || !platform || !trainNumber) return null;
+
+  const arrivalTime = typeof input.arrivalTime === 'string' ? input.arrivalTime : undefined;
+  const headwayMinutes = typeof input.headwayMinutes === 'number' ? input.headwayMinutes : undefined;
+  const daysOfWeek = Array.isArray(input.daysOfWeek) && input.daysOfWeek.length > 0 ? (input.daysOfWeek as ScheduleDayOfWeek[]) : ALL_DAYS;
+  const effectiveFrom = typeof input.effectiveFrom === 'string' ? input.effectiveFrom : undefined;
+  const effectiveTo = typeof input.effectiveTo === 'string' ? input.effectiveTo : undefined;
+  const published = typeof input.published === 'boolean' ? input.published : true;
+
+  return {
+    id,
+    station,
+    line,
+    destination,
+    departureTime,
+    arrivalTime,
+    platform,
+    status,
+    trainNumber,
+    headwayMinutes,
+    daysOfWeek,
+    effectiveFrom,
+    effectiveTo,
+    published,
+  };
+}
 
 function ensureDataDir(): void {
   if (!fs.existsSync(DATA_DIR)) {
@@ -99,13 +166,24 @@ function loadSchedulesFromDisk(): ScheduleRecord[] {
     }
 
     const raw = fs.readFileSync(SCHEDULES_DB_PATH, 'utf-8');
-    const parsed = JSON.parse(raw) as ScheduleRecord[];
+    const parsed = JSON.parse(raw) as any;
     if (!Array.isArray(parsed)) {
       fs.writeFileSync(SCHEDULES_DB_PATH, JSON.stringify(DEFAULT_SCHEDULES, null, 2), 'utf-8');
       return [...DEFAULT_SCHEDULES];
     }
 
-    return parsed;
+    const normalized = parsed
+      .map((item) => normalizeScheduleRecord(item))
+      .filter((item): item is ScheduleRecord => Boolean(item));
+
+    if (normalized.length === 0) {
+      fs.writeFileSync(SCHEDULES_DB_PATH, JSON.stringify(DEFAULT_SCHEDULES, null, 2), 'utf-8');
+      return [...DEFAULT_SCHEDULES];
+    }
+
+    // Persist normalization so newly added fields exist on disk.
+    saveSchedulesToDisk(normalized);
+    return normalized;
   } catch {
     return [...DEFAULT_SCHEDULES];
   }
@@ -118,12 +196,14 @@ function saveSchedulesToDisk(schedules: ScheduleRecord[]): void {
 
 const SCHEDULES: ScheduleRecord[] = loadSchedulesFromDisk();
 
-export function listSchedules(filter?: { station?: string; line?: string }): ScheduleRecord[] {
+export function listSchedules(filter?: { station?: string; line?: string; includeUnpublished?: boolean }): ScheduleRecord[] {
   const station = filter?.station?.trim().toLowerCase();
   const line = filter?.line?.trim().toLowerCase();
+  const includeUnpublished = Boolean(filter?.includeUnpublished);
   return SCHEDULES.filter((s) => {
     if (station && s.station.trim().toLowerCase() !== station) return false;
     if (line && s.line.trim().toLowerCase() !== line) return false;
+    if (!includeUnpublished && !s.published) return false;
     return true;
   });
 }

@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Activity, Radio, AlertTriangle, Key, Users, Bell } from 'lucide-react';
+import { Shield, Activity, Radio, AlertTriangle, Key, Users, Bell, CalendarClock } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import './admin-portal.css';
-import { fetchTrainsForStation } from '../services/schedules';
-import { Train } from '../types/metro';
+import {
+  createScheduleRecord,
+  deleteScheduleRecord,
+  fetchTrainsForStation,
+  listScheduleRecords,
+  updateScheduleRecord,
+  type ScheduleDayOfWeek,
+  type ScheduleRecord,
+  type ScheduleStatus,
+} from '../services/schedules';
+import { Alert, SystemSection, Train } from '../types/metro';
 import { AlertPanel } from './AlertPanel';
 
 export interface StaffMember {
@@ -14,27 +23,117 @@ export interface StaffMember {
 }
 
 export interface AdminPortalProps {
-  alerts: any[];
+  alerts: Alert[];
   onResolveAlert: (id: string) => void;
-  onAddAlert: (title: string, message: string, severity: 'info' | 'warning' | 'critical', station?: string, line?: string, options?: any) => void;
+  onAddAlert: (alert: Omit<Alert, 'id' | 'timestamp' | 'resolved'>) => void;
   showAlerts: boolean;
   onCloseAlerts: () => void;
-  section: 'metro' | 'railway';
+  section: SystemSection;
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert, onAddAlert, showAlerts, onCloseAlerts, section }) => {
-  const [activeView, setActiveView] = useState<'overview' | 'broadcast' | 'audit' | 'staff' | 'alerts'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'broadcast' | 'audit' | 'staff' | 'scheduling' | 'alerts'>('overview');
+  const [lastNonAlertView, setLastNonAlertView] = useState<'overview' | 'broadcast' | 'audit' | 'staff' | 'scheduling'>('overview');
+
+  const setNonAlertView = (view: 'overview' | 'broadcast' | 'audit' | 'staff' | 'scheduling') => {
+    setActiveView(view);
+    setLastNonAlertView(view);
+    onCloseAlerts();
+  };
 
   useEffect(() => {
     if (showAlerts) {
-      setActiveView('alerts');
+      setActiveView((prev) => {
+        if (prev !== 'alerts') {
+          setLastNonAlertView(prev as 'overview' | 'broadcast' | 'audit' | 'staff' | 'scheduling');
+        }
+        return 'alerts';
+      });
+      return;
     }
-  }, [showAlerts]);
+
+    setActiveView((prev) => (prev === 'alerts' ? lastNonAlertView : prev));
+  }, [showAlerts, lastNonAlertView]);
   const [fleetData, setFleetData] = useState<{ time: string; health: number; faults: number }[]>([]);
   const [avgHealth, setAvgHealth] = useState(0);
   const [livePassengers, setLivePassengers] = useState(0);
   const [auditLogs, setAuditLogs] = useState<{ time: string; action: string; agent: string; risk: string }[]>([]);
   const [anomaliesCount, setAnomaliesCount] = useState(0);
+
+  const ALL_DAYS: { key: ScheduleDayOfWeek; label: string }[] = [
+    { key: 'mon', label: 'Mon' },
+    { key: 'tue', label: 'Tue' },
+    { key: 'wed', label: 'Wed' },
+    { key: 'thu', label: 'Thu' },
+    { key: 'fri', label: 'Fri' },
+    { key: 'sat', label: 'Sat' },
+    { key: 'sun', label: 'Sun' },
+  ];
+
+  const [scheduleRecords, setScheduleRecords] = useState<ScheduleRecord[]>([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
+  const [scheduleFilterStation, setScheduleFilterStation] = useState('');
+  const [scheduleFilterLine, setScheduleFilterLine] = useState('');
+
+  const [scheduleCreate, setScheduleCreate] = useState<{
+    station: string;
+    destination: string;
+    line: string;
+    departureTime: string;
+    arrivalTime: string;
+    platform: string;
+    trainNumber: string;
+    headwayMinutes: string;
+    daysOfWeek: ScheduleDayOfWeek[];
+    effectiveFrom: string;
+    effectiveTo: string;
+    status: ScheduleStatus;
+    published: boolean;
+  }>({
+    station: '',
+    destination: '',
+    line: '',
+    departureTime: '',
+    arrivalTime: '',
+    platform: '',
+    trainNumber: '',
+    headwayMinutes: '',
+    daysOfWeek: ALL_DAYS.map((d) => d.key),
+    effectiveFrom: '',
+    effectiveTo: '',
+    status: 'on-time',
+    published: true,
+  });
+
+  const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
+  const [scheduleEdit, setScheduleEdit] = useState<typeof scheduleCreate | null>(null);
+  const [pendingDeleteScheduleId, setPendingDeleteScheduleId] = useState<string | null>(null);
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+
+  const loadScheduleRecords = async () => {
+    setScheduleError('');
+    setScheduleLoading(true);
+    try {
+      const records = await listScheduleRecords({
+        station: scheduleFilterStation.trim() || undefined,
+        line: scheduleFilterLine.trim() || undefined,
+        includeUnpublished: true,
+      });
+      setScheduleRecords(records);
+    } catch (e) {
+      setScheduleError(e instanceof Error ? e.message : 'Failed to load schedules.');
+    } finally {
+      setScheduleLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeView === 'scheduling') {
+      void loadScheduleRecords();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeView]);
 
   const [staffList, setStaffList] = useState<StaffMember[]>([
     { id: 'MRS-A-001', name: 'Rajesh Kumar', role: 'Admin', status: 'Active' },
@@ -140,38 +239,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
         
         <button 
           className={`admin-nav-item ${activeView === 'overview' ? 'active' : ''}`}
-          onClick={() => { setActiveView('overview'); onCloseAlerts(); }}
+          onClick={() => setNonAlertView('overview')}
         >
           <Activity size={20} /> Network Overview
         </button>
         <button 
           className={`admin-nav-item ${activeView === 'broadcast' ? 'active' : ''}`}
-          onClick={() => { setActiveView('broadcast'); onCloseAlerts(); }}
+          onClick={() => setNonAlertView('broadcast')}
         >
           <Radio size={20} /> Global Broadcast
         </button>
         <button 
           className={`admin-nav-item ${activeView === 'audit' ? 'active' : ''}`}
-          onClick={() => { setActiveView('audit'); onCloseAlerts(); }}
+          onClick={() => setNonAlertView('audit')}
         >
           <Shield size={20} /> Security & Audit
         </button>
         <button 
           className={`admin-nav-item ${activeView === 'staff' ? 'active' : ''}`}
-          onClick={() => { setActiveView('staff'); onCloseAlerts(); }}
+          onClick={() => setNonAlertView('staff')}
         >
           <Users size={20} /> Staff Management
         </button>
-        <button 
-          className={`admin-nav-item ${activeView === 'alerts' ? 'active' : ''}`}
-          onClick={() => { setActiveView('alerts'); onCloseAlerts(); }}
+
+        <button
+          className={`admin-nav-item ${activeView === 'scheduling' ? 'active' : ''}`}
+          onClick={() => setNonAlertView('scheduling')}
         >
-          <Bell size={20} /> System Alerts
-          {alerts.filter(a => !a.resolved && a.section === section).length > 0 && (
-            <span style={{ marginLeft: 'auto', background: '#ef4444', color: 'white', borderRadius: 10, padding: '2px 6px', fontSize: 10, fontWeight: 'bold' }}>
-              {alerts.filter(a => !a.resolved && a.section === section).length}
-            </span>
-          )}
+          <CalendarClock size={20} /> Train Scheduling
         </button>
       </aside>
 
@@ -479,6 +574,581 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                       )}
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeView === 'scheduling' && (
+          <div className="admin-panel animate-slide">
+            <div className="panel-header">
+              <CalendarClock size={24} /> Train Scheduling
+            </div>
+
+            <div className="schedule-toolbar">
+              <input
+                className="broadcast-input"
+                placeholder="Filter by station"
+                value={scheduleFilterStation}
+                onChange={(e) => setScheduleFilterStation(e.target.value)}
+              />
+              <input
+                className="broadcast-input"
+                placeholder="Filter by line"
+                value={scheduleFilterLine}
+                onChange={(e) => setScheduleFilterLine(e.target.value)}
+              />
+              <button
+                type="button"
+                className="schedule-action-btn"
+                onClick={() => void loadScheduleRecords()}
+                disabled={scheduleLoading}
+              >
+                {scheduleLoading ? 'Refreshing…' : 'Refresh'}
+              </button>
+              {scheduleError ? <div className="admin-subtitle">{scheduleError}</div> : null}
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void (async () => {
+                  setScheduleError('');
+
+                  const station = scheduleCreate.station.trim();
+                  const destination = scheduleCreate.destination.trim();
+                  const line = scheduleCreate.line.trim();
+                  const platform = scheduleCreate.platform.trim();
+                  const trainNumber = scheduleCreate.trainNumber.trim();
+
+                  if (
+                    !station ||
+                    !destination ||
+                    !line ||
+                    !platform ||
+                    !trainNumber ||
+                    !scheduleCreate.departureTime ||
+                    !scheduleCreate.arrivalTime
+                  ) {
+                    setScheduleError('Please fill all required fields.');
+                    return;
+                  }
+
+                  if (scheduleCreate.daysOfWeek.length === 0) {
+                    setScheduleError('Please select at least one day.');
+                    return;
+                  }
+
+                  const headwayMinutes = scheduleCreate.headwayMinutes.trim();
+                  const headway = headwayMinutes ? Number(headwayMinutes) : undefined;
+                  if (headwayMinutes && (!Number.isFinite(headway) || headway <= 0)) {
+                    setScheduleError('Headway must be a positive number.');
+                    return;
+                  }
+
+                  setScheduleSaving(true);
+                  try {
+                    await createScheduleRecord({
+                      station,
+                      destination,
+                      line,
+                      departureTime: scheduleCreate.departureTime,
+                      arrivalTime: scheduleCreate.arrivalTime,
+                      platform,
+                      trainNumber,
+                      status: scheduleCreate.status,
+                      headwayMinutes: headway,
+                      daysOfWeek: scheduleCreate.daysOfWeek,
+                      effectiveFrom: scheduleCreate.effectiveFrom || undefined,
+                      effectiveTo: scheduleCreate.effectiveTo || undefined,
+                      published: scheduleCreate.published,
+                    });
+                    await loadScheduleRecords();
+                    setScheduleCreate((prev) => ({
+                      ...prev,
+                      station: '',
+                      destination: '',
+                      line: '',
+                      departureTime: '',
+                      arrivalTime: '',
+                      platform: '',
+                      trainNumber: '',
+                      headwayMinutes: '',
+                      effectiveFrom: '',
+                      effectiveTo: '',
+                      status: 'on-time',
+                      published: true,
+                      daysOfWeek: ALL_DAYS.map((d) => d.key),
+                    }));
+                  } catch (e2) {
+                    setScheduleError(e2 instanceof Error ? e2.message : 'Failed to create schedule.');
+                  } finally {
+                    setScheduleSaving(false);
+                  }
+                })();
+              }}
+            >
+              <div className="schedule-form-grid">
+                <input
+                  className="broadcast-input"
+                  placeholder="Line"
+                  value={scheduleCreate.line}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, line: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  placeholder="From station"
+                  value={scheduleCreate.station}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, station: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  placeholder="To station"
+                  value={scheduleCreate.destination}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, destination: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  type="time"
+                  value={scheduleCreate.departureTime}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, departureTime: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  type="time"
+                  value={scheduleCreate.arrivalTime}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, arrivalTime: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  placeholder="Platform"
+                  value={scheduleCreate.platform}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, platform: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  placeholder="Train number"
+                  value={scheduleCreate.trainNumber}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, trainNumber: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  type="number"
+                  placeholder="Headway (min)"
+                  value={scheduleCreate.headwayMinutes}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, headwayMinutes: e.target.value }))}
+                  min={1}
+                />
+                <select
+                  className="broadcast-select"
+                  value={scheduleCreate.status}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, status: e.target.value as ScheduleStatus }))}
+                  title="Status"
+                >
+                  <option value="on-time">On time</option>
+                  <option value="delayed">Delayed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <input
+                  className="broadcast-input"
+                  type="date"
+                  value={scheduleCreate.effectiveFrom}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, effectiveFrom: e.target.value }))}
+                />
+                <input
+                  className="broadcast-input"
+                  type="date"
+                  value={scheduleCreate.effectiveTo}
+                  onChange={(e) => setScheduleCreate((p) => ({ ...p, effectiveTo: e.target.value }))}
+                />
+                <label className="schedule-pill schedule-pill-center">
+                  <input
+                    type="checkbox"
+                    checked={scheduleCreate.published}
+                    onChange={(e) => setScheduleCreate((p) => ({ ...p, published: e.target.checked }))}
+                  />
+                  Published
+                </label>
+              </div>
+
+              <div className="schedule-days">
+                {ALL_DAYS.map((d) => (
+                  <label key={d.key}>
+                    <input
+                      type="checkbox"
+                      checked={scheduleCreate.daysOfWeek.includes(d.key)}
+                      onChange={(e) => {
+                        setScheduleCreate((p) => {
+                          const next = new Set(p.daysOfWeek);
+                          if (e.target.checked) next.add(d.key);
+                          else next.delete(d.key);
+                          return { ...p, daysOfWeek: Array.from(next) as ScheduleDayOfWeek[] };
+                        });
+                      }}
+                    />
+                    {d.label}
+                  </label>
+                ))}
+              </div>
+
+              <div className="schedule-actions">
+                <button type="submit" className="schedule-action-btn" disabled={scheduleSaving}>
+                  {scheduleSaving ? 'Adding…' : 'Add Schedule'}
+                </button>
+              </div>
+            </form>
+
+            <div className="schedule-table schedule-table-top">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Published</th>
+                    <th>Line</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Dep</th>
+                    <th>Arr</th>
+                    <th>Platform</th>
+                    <th>Train #</th>
+                    <th>Headway</th>
+                    <th>Days</th>
+                    <th>Effective</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scheduleLoading && scheduleRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan={13}>Loading…</td>
+                    </tr>
+                  ) : null}
+
+                  {!scheduleLoading && scheduleRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan={13}>No schedules found.</td>
+                    </tr>
+                  ) : null}
+
+                  {scheduleRecords.map((rec) => {
+                    const isEditing = editingScheduleId === rec.id && scheduleEdit;
+                    return (
+                      <tr key={rec.id}>
+                        <td>
+                          <span className={`schedule-pill ${rec.published ? '' : 'off'}`}>
+                            {rec.published ? 'Published' : 'Unpublished'}
+                          </span>
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              value={scheduleEdit.line}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, line: e.target.value })}
+                            />
+                          ) : (
+                            rec.line
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              value={scheduleEdit.station}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, station: e.target.value })}
+                            />
+                          ) : (
+                            rec.station
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              value={scheduleEdit.destination}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, destination: e.target.value })}
+                            />
+                          ) : (
+                            rec.destination
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              type="time"
+                              value={scheduleEdit.departureTime}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, departureTime: e.target.value })}
+                            />
+                          ) : (
+                            rec.departureTime
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              type="time"
+                              value={scheduleEdit.arrivalTime}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, arrivalTime: e.target.value })}
+                            />
+                          ) : (
+                            rec.arrivalTime ?? '—'
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              value={scheduleEdit.platform}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, platform: e.target.value })}
+                            />
+                          ) : (
+                            rec.platform
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              value={scheduleEdit.trainNumber}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, trainNumber: e.target.value })}
+                            />
+                          ) : (
+                            rec.trainNumber
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="broadcast-input"
+                              type="number"
+                              value={scheduleEdit.headwayMinutes}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, headwayMinutes: e.target.value })}
+                              min={1}
+                            />
+                          ) : rec.headwayMinutes ? (
+                            `${rec.headwayMinutes} min`
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <div className="schedule-days">
+                              {ALL_DAYS.map((d) => (
+                                <label key={`${rec.id}-${d.key}`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={scheduleEdit.daysOfWeek.includes(d.key)}
+                                    onChange={(e) => {
+                                      const next = new Set(scheduleEdit.daysOfWeek);
+                                      if (e.target.checked) next.add(d.key);
+                                      else next.delete(d.key);
+                                      setScheduleEdit({ ...scheduleEdit, daysOfWeek: Array.from(next) as ScheduleDayOfWeek[] });
+                                    }}
+                                  />
+                                  {d.label}
+                                </label>
+                              ))}
+                            </div>
+                          ) : (
+                            rec.daysOfWeek.join(', ')
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <div className="schedule-toolbar">
+                              <input
+                                className="broadcast-input"
+                                type="date"
+                                value={scheduleEdit.effectiveFrom}
+                                onChange={(e) => setScheduleEdit({ ...scheduleEdit, effectiveFrom: e.target.value })}
+                              />
+                              <input
+                                className="broadcast-input"
+                                type="date"
+                                value={scheduleEdit.effectiveTo}
+                                onChange={(e) => setScheduleEdit({ ...scheduleEdit, effectiveTo: e.target.value })}
+                              />
+                            </div>
+                          ) : (
+                            `${rec.effectiveFrom ?? '—'} → ${rec.effectiveTo ?? '—'}`
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <select
+                              className="broadcast-select"
+                              value={scheduleEdit.status}
+                              onChange={(e) => setScheduleEdit({ ...scheduleEdit, status: e.target.value as ScheduleStatus })}
+                              title="Status"
+                            >
+                              <option value="on-time">On time</option>
+                              <option value="delayed">Delayed</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          ) : (
+                            rec.status
+                          )}
+                        </td>
+                        <td>
+                          <div className="schedule-row-actions">
+                            {isEditing ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="schedule-link"
+                                  onClick={() => {
+                                    void (async () => {
+                                      if (!editingScheduleId || !scheduleEdit) return;
+                                      setScheduleError('');
+
+                                      const headwayMinutes = scheduleEdit.headwayMinutes.trim();
+                                      const headway = headwayMinutes ? Number(headwayMinutes) : undefined;
+                                      if (headwayMinutes && (!Number.isFinite(headway) || headway <= 0)) {
+                                        setScheduleError('Headway must be a positive number.');
+                                        return;
+                                      }
+
+                                      if (!scheduleEdit.departureTime || !scheduleEdit.arrivalTime) {
+                                        setScheduleError('Departure and arrival time are required.');
+                                        return;
+                                      }
+
+                                      setScheduleSaving(true);
+                                      try {
+                                        await updateScheduleRecord(editingScheduleId, {
+                                          station: scheduleEdit.station.trim(),
+                                          destination: scheduleEdit.destination.trim(),
+                                          line: scheduleEdit.line.trim(),
+                                          departureTime: scheduleEdit.departureTime,
+                                          arrivalTime: scheduleEdit.arrivalTime,
+                                          platform: scheduleEdit.platform.trim(),
+                                          trainNumber: scheduleEdit.trainNumber.trim(),
+                                          status: scheduleEdit.status,
+                                          headwayMinutes: headway,
+                                          daysOfWeek: scheduleEdit.daysOfWeek,
+                                          effectiveFrom: scheduleEdit.effectiveFrom || undefined,
+                                          effectiveTo: scheduleEdit.effectiveTo || undefined,
+                                          published: rec.published,
+                                        });
+                                        setEditingScheduleId(null);
+                                        setScheduleEdit(null);
+                                        await loadScheduleRecords();
+                                      } catch (e2) {
+                                        setScheduleError(e2 instanceof Error ? e2.message : 'Failed to update schedule.');
+                                      } finally {
+                                        setScheduleSaving(false);
+                                      }
+                                    })();
+                                  }}
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  type="button"
+                                  className="schedule-link"
+                                  onClick={() => {
+                                    setEditingScheduleId(null);
+                                    setScheduleEdit(null);
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : pendingDeleteScheduleId === rec.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="schedule-link"
+                                  onClick={() => {
+                                    void (async () => {
+                                      setScheduleError('');
+                                      setScheduleSaving(true);
+                                      try {
+                                        await deleteScheduleRecord(rec.id);
+                                        setPendingDeleteScheduleId(null);
+                                        await loadScheduleRecords();
+                                      } catch (e2) {
+                                        setScheduleError(e2 instanceof Error ? e2.message : 'Failed to delete schedule.');
+                                      } finally {
+                                        setScheduleSaving(false);
+                                      }
+                                    })();
+                                  }}
+                                >
+                                  Confirm delete
+                                </button>
+                                <button
+                                  type="button"
+                                  className="schedule-link"
+                                  onClick={() => setPendingDeleteScheduleId(null)}
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  className="schedule-link"
+                                  onClick={() => {
+                                    setEditingScheduleId(rec.id);
+                                    setScheduleEdit({
+                                      station: rec.station,
+                                      destination: rec.destination,
+                                      line: rec.line,
+                                      departureTime: rec.departureTime,
+                                      arrivalTime: rec.arrivalTime ?? '',
+                                      platform: rec.platform,
+                                      trainNumber: rec.trainNumber,
+                                      headwayMinutes: rec.headwayMinutes ? String(rec.headwayMinutes) : '',
+                                      daysOfWeek: rec.daysOfWeek,
+                                      effectiveFrom: rec.effectiveFrom ?? '',
+                                      effectiveTo: rec.effectiveTo ?? '',
+                                      status: rec.status,
+                                      published: rec.published,
+                                    });
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="schedule-link"
+                                  onClick={() => {
+                                    void (async () => {
+                                      setScheduleError('');
+                                      setScheduleSaving(true);
+                                      try {
+                                        await updateScheduleRecord(rec.id, { published: !rec.published });
+                                        await loadScheduleRecords();
+                                      } catch (e2) {
+                                        setScheduleError(e2 instanceof Error ? e2.message : 'Failed to update schedule.');
+                                      } finally {
+                                        setScheduleSaving(false);
+                                      }
+                                    })();
+                                  }}
+                                >
+                                  {rec.published ? 'Unpublish' : 'Publish'}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="schedule-link"
+                                  onClick={() => setPendingDeleteScheduleId(rec.id)}
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

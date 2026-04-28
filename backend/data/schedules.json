@@ -1,5 +1,53 @@
 [
   {
+    "station": "Virar",
+    "line": "Western",
+    "destination": "Dadar",
+    "departureTime": "20:21",
+    "arrivalTime": "23:20",
+    "platform": "2",
+    "status": "cancelled",
+    "trainNumber": "MRS-R-101",
+    "headwayMinutes": 7,
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "effectiveFrom": "2026-04-29",
+    "effectiveTo": "2026-04-29",
+    "published": true,
+    "id": "sch-1777376974709-41a4cd"
+  },
+  {
+    "station": "Ghatkopar",
+    "line": "Aqua Line",
+    "destination": "Versova",
+    "departureTime": "09:10",
+    "arrivalTime": "09:45",
+    "platform": "1",
+    "status": "on-time",
+    "trainNumber": "MRS-AQ-999",
+    "headwayMinutes": 10,
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "effectiveFrom": "2026-04-28",
+    "published": false,
+    "id": "sch-1777376842922-45c263"
+  },
+  {
+    "id": "sch-1776772905108-450d08",
     "station": "Kalyan",
     "line": "Central Line",
     "destination": "CSMT",
@@ -7,9 +55,19 @@
     "platform": "4",
     "status": "delayed",
     "trainNumber": "MRS-CL-808",
-    "id": "sch-1776772905108-450d08"
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   },
   {
+    "id": "sch-1776772905104-bc188e",
     "station": "Andheri",
     "line": "Red Line",
     "destination": "Gundavali",
@@ -17,9 +75,19 @@
     "platform": "2",
     "status": "on-time",
     "trainNumber": "MRS-RL-305",
-    "id": "sch-1776772905104-bc188e"
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   },
   {
+    "id": "sch-1776770338491-5ad8d9",
     "station": "Versova",
     "line": "Line 1 – Versova–Ghatkopar",
     "destination": "D N Nagar",
@@ -27,7 +95,16 @@
     "platform": "3",
     "status": "cancelled",
     "trainNumber": "MRs-L1-101",
-    "id": "sch-1776770338491-5ad8d9"
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   },
   {
     "id": "sch-001",
@@ -37,7 +114,17 @@
     "departureTime": "08:05",
     "platform": "2",
     "status": "on-time",
-    "trainNumber": "MRS-AQ-101"
+    "trainNumber": "MRS-AQ-101",
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   },
   {
     "id": "sch-002",
@@ -47,7 +134,17 @@
     "departureTime": "08:12",
     "platform": "1",
     "status": "delayed",
-    "trainNumber": "MRS-YL-220"
+    "trainNumber": "MRS-YL-220",
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   },
   {
     "id": "sch-003",
@@ -57,7 +154,17 @@
     "departureTime": "08:30",
     "platform": "5",
     "status": "on-time",
-    "trainNumber": "MRS-DEX-501"
+    "trainNumber": "MRS-DEX-501",
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   },
   {
     "id": "sch-004",
@@ -67,7 +174,17 @@
     "departureTime": "09:15",
     "platform": "2",
     "status": "on-time",
-    "trainNumber": "MRS-RL-305"
+    "trainNumber": "MRS-RL-305",
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   },
   {
     "id": "sch-005",
@@ -77,6 +194,16 @@
     "departureTime": "09:45",
     "platform": "4",
     "status": "delayed",
-    "trainNumber": "MRS-CL-808"
+    "trainNumber": "MRS-CL-808",
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
   }
 ]

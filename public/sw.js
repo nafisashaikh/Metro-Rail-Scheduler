@@ -109,7 +109,8 @@ self.addEventListener('fetch', (event) => {
 function isApiRequest(url) {
   return url.pathname.includes('/api/') || 
          url.pathname.includes('/realtime/') ||
-         url.pathname.includes('/auth/');
+         url.pathname.includes('/auth/') ||
+         url.pathname.startsWith('/schedules');
 }
 
 // Handle API requests with cache-first strategy for offline support
@@ -179,7 +180,8 @@ async function handleApiRequest(request) {
       
       // Check if cached data is still valid
       const cacheAge = Date.now() - cachedData.timestamp;
-      const isStale = cacheAge > CACHE_DURATIONS.API_DATA;
+      const maxAge = url.pathname.startsWith('/schedules') ? CACHE_DURATIONS.SCHEDULES : CACHE_DURATIONS.API_DATA;
+      const isStale = cacheAge > maxAge;
       
       console.log(`[SW] Serving from cache (age: ${Math.floor(cacheAge / 1000)}s):`, url.pathname);
       

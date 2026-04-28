@@ -6,6 +6,7 @@ import {
   listSchedules,
   scheduleToTrain,
   updateSchedule,
+  type ScheduleDayOfWeek,
   type ScheduleRecord,
   type ScheduleStatus,
 } from '../data/schedules.js';
@@ -21,16 +22,32 @@ const timeHHMM = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'departureTime must be in HH:MM format');
 
+const isoDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be in YYYY-MM-DD format');
+
 const statusSchema = z.enum(['on-time', 'delayed', 'cancelled']);
+
+const daysSchema = z
+  .array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']))
+  .min(1)
+  .max(7);
 
 const createSchema = z.object({
   station: z.string().min(1).max(80),
   line: z.string().min(1).max(80),
   destination: z.string().min(1).max(80),
   departureTime: timeHHMM,
+  arrivalTime: timeHHMM.optional(),
   platform: z.string().min(1).max(10),
   status: statusSchema.optional().default('on-time'),
   trainNumber: z.string().min(3).max(40),
+
+  headwayMinutes: z.coerce.number().int().min(1).max(240).optional(),
+  daysOfWeek: daysSchema.optional().default(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] satisfies ScheduleDayOfWeek[]),
+  effectiveFrom: isoDate.optional(),
+  effectiveTo: isoDate.optional(),
+  published: z.boolean().optional().default(true),
 });
 
 const updateSchema = createSchema.partial().refine((obj) => Object.keys(obj).length > 0, {
@@ -40,7 +57,12 @@ const updateSchema = createSchema.partial().refine((obj) => Object.keys(obj).len
 schedulesRouter.get('/', requireAuth, (req, res) => {
   const station = typeof req.query.station === 'string' ? req.query.station : undefined;
   const line = typeof req.query.line === 'string' ? req.query.line : undefined;
-  const schedules = listSchedules({ station, line });
+  const includeUnpublishedRequested = req.query.includeUnpublished === 'true';
+  const includeUnpublished = Boolean(
+    includeUnpublishedRequested && req.auth && requireScheduleWriteRole(req.auth.role)
+  );
+
+  const schedules = listSchedules({ station, line, includeUnpublished });
   const trains = schedules.map(scheduleToTrain);
   res.status(200).json({ schedules, trains });
 });

@@ -6,8 +6,8 @@
     "employeeId": "MRS-A-001",
     "department": "Administration",
     "identifier": "MRS-A-001",
-    "passwordSaltHex": "aa202e4f9ca5b6cc8b5180c54e76f260",
-    "passwordHashHex": "db89e98fe84b69445b3b7e8e56f6f3c1b088cdff7be678300bfff59aecc8d64c3fa493314315fcb412669f58331eafb2c68a84f35617656edebd27e58c7da77d"
+    "passwordSaltHex": "8c6e02c5c40e86b518afcc5f3af81430",
+    "passwordHashHex": "6a05d22b4c7c80f6d1078a008afea00d5f621da335f4d8fcd412781d6de95580e1029a06a2e65a7aacb89db8ee75563f59ae672de70b1218325e8b22c2fd26e0"
   },
   {
     "id": "2",
