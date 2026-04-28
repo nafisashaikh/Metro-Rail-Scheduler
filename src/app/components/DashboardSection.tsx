@@ -22,6 +22,7 @@ import { StationBlueprint } from './StationBlueprint';
 import { EcoStats } from './EcoStats';
 import { StaffTasks } from './StaffTasks';
 import { StaffBroadcast } from './StaffBroadcast';
+import { AdminScheduleManager } from './AdminScheduleManager';
 import {
   Calendar,
   Map,
@@ -42,7 +43,8 @@ import {
   Compass,
   WifiOff,
   ZapOff,
-  Megaphone
+  Megaphone,
+  Settings
 } from 'lucide-react';
 import {
   BarChart,
@@ -72,6 +74,7 @@ interface DashboardSectionProps {
   onCloseAlerts: () => void;
   passengerUser?: PassengerUser;
   lang?: string;
+  authToken?: string;
 }
 
 // Staff tabs
@@ -124,11 +127,22 @@ export function DashboardSection({
   onCloseAlerts,
   passengerUser,
   lang = 'en',
+  authToken = '',
 }: DashboardSectionProps) {
   const t = translations[lang as Language] || translations.en;
   const isPassenger = userRole === 'passenger';
+  const isAdmin = userRole === 'admin';
   const PASSENGER_TABS = getPassengerTabs(t);
-  const TAB_LIST = isPassenger ? PASSENGER_TABS : STAFF_TABS;
+  
+  const getStaffTabs = () => {
+    const baseTabs = [...STAFF_TABS];
+    if (isAdmin) {
+      baseTabs.push({ id: 'admin-schedules', label: 'Manage Schedules', icon: Settings });
+    }
+    return baseTabs;
+  };
+  
+  const TAB_LIST = isPassenger ? PASSENGER_TABS : getStaffTabs();
   const [selectedLine, setSelectedLine] = useState<MetroLine | null>(lines[0] || null);
   const [selectedStation, setSelectedStation] = useState<string | null>(null);
   const [trains, setTrains] = useState<Train[]>([]);
@@ -842,6 +856,13 @@ export function DashboardSection({
                 section={section}
                 onBroadcast={onAddAlert}
               />
+            </div>
+          )}
+
+          {/* Admin Schedule Management */}
+          {activeTab === 'admin-schedules' && (
+            <div className="rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-4 sm:p-6">
+              <AdminScheduleManager authToken={authToken} />
             </div>
           )}
 

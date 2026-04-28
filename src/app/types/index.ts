@@ -11,6 +11,7 @@ export type {
   StationCoord,
   MetroLine,
   Schedule,
+  ScheduleItem,
   Train,
   TrainHealth,
   TrainCapacity,

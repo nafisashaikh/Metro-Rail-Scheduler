@@ -340,6 +340,7 @@ export default function App() {
               showAlerts={showAlerts}
               onCloseAlerts={() => setShowAlerts(false)}
               lang={lang}
+              authToken={localStorage.getItem(AUTH_TOKEN_KEY) || ''}
             />
           </main>
 

@@ -42,6 +42,16 @@ export interface Schedule {
   departures: string[];
 }
 
+export interface ScheduleItem {
+  id: string;
+  line: string;
+  from: string;
+  to: string;
+  departureTime: string;
+  platform: string;
+  status: 'on-time' | 'delayed' | 'arriving';
+}
+
 export interface Train {
   id: string;
   line: string;

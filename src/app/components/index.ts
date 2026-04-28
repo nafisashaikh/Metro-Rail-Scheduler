@@ -40,6 +40,9 @@ export { SatelliteMap } from './SatelliteMap';
 export { WeatherWidget } from './WeatherWidget';
 export { PredictiveScheduling } from './PredictiveScheduling';
 
+// ── Admin ─────────────────────────────────────────────────────────────────────
+export { AdminScheduleManager } from './AdminScheduleManager';
+
 // ── Passenger ─────────────────────────────────────────────────────────────────
 export { PassengerJourneyPlanner } from './PassengerJourneyPlanner';
 export { MedicalPrescription } from './MedicalPrescription';
