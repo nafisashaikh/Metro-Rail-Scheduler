@@ -1,5 +1,25 @@
 [
   {
+    "station": "Dadar",
+    "line": "Western Railway – Churchgate to Virar",
+    "destination": "Vasai",
+    "departureTime": "06:00",
+    "platform": "1",
+    "status": "cancelled",
+    "trainNumber": "MRS-L1-101",
+    "id": "sch-1776772059780-c247ee"
+  },
+  {
+    "station": "Dadar",
+    "line": "Western Railway – Churchgate to Virar",
+    "destination": "Virar",
+    "departureTime": "03:00",
+    "platform": "6",
+    "status": "delayed",
+    "trainNumber": "MRS-L2-102",
+    "id": "sch-1776771714412-6cd7b0"
+  },
+  {
     "station": "Versova",
     "line": "Line 1 – Versova–Ghatkopar",
     "destination": "D N Nagar",

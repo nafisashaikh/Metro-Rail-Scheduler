@@ -68,5 +68,45 @@
     "identifier": "testuser3860",
     "passwordSaltHex": "7bd276da840d2dca3fb5209a812868dc",
     "passwordHashHex": "dd79e3e9946302df8be3a0deecb606c10d586744c0c26bbf3ad891de84f4531d1e2602546d7448dbcbf18ffdf03431f12bcc743568ee70d7d8d2b1ed8b95b3ee"
+  },
+  {
+    "id": "p007",
+    "name": "API Tester",
+    "role": "passenger",
+    "username": "testuser832",
+    "cardNumber": "MPC-7005",
+    "identifier": "testuser832",
+    "passwordSaltHex": "03b10bab3510ec94497dbca739e5a85b",
+    "passwordHashHex": "f5eb32bdfb444e3ee3a5c3dcdc776efbade0ef4314b70877421a43ee9d5a400445279b4df48e599c4ebb79f37f7e9c509e1f900ce98947b16722aa5863278ed5"
+  },
+  {
+    "id": "p008",
+    "name": "API Tester",
+    "role": "passenger",
+    "username": "testuser445",
+    "cardNumber": "MPC-7006",
+    "identifier": "testuser445",
+    "passwordSaltHex": "dabef30c164c47cb2a299245b6b60712",
+    "passwordHashHex": "7c6c4b296da56c8b4b1dc209f0a836f9b991abc72ca7a397a82ce628bced6800ee4b20af5733bc0e2e7af93a29542469def33e1c675e8d0683350eb2089ed133"
+  },
+  {
+    "id": "p009",
+    "name": "API Tester",
+    "role": "passenger",
+    "username": "testuser1825",
+    "cardNumber": "MPC-7007",
+    "identifier": "testuser1825",
+    "passwordSaltHex": "9ae04e7e5ab8d19341d31df7d3598d47",
+    "passwordHashHex": "171807ae6c0b0f1f9284439faded9f079e022a944d1182c36b7ca36968a97dd6bdf80c705ef2a6371a13dc0de5a50c0977ed16cb9f1e5157384f7e4262fa257c"
+  },
+  {
+    "id": "p010",
+    "name": "API Tester",
+    "role": "passenger",
+    "username": "testuser8302",
+    "cardNumber": "MPC-7008",
+    "identifier": "testuser8302",
+    "passwordSaltHex": "d7a19171911e7de3f03aba8d0016d900",
+    "passwordHashHex": "9fdfdba944a030a34565655d6a34dea8a243dbb035dbf8181d5a62c8835630b0d09d551d0ae5c9e8c53ecbed4440137867d2dddf6884f5d05b225650c43dd8ba"
   }
 ]
