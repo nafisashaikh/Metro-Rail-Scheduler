@@ -493,7 +493,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
                       </td>
                     </tr>
                   )}
-                  {staffList.map((staff, i) => (
+                  {staffList.map((staff) => (
                     <tr key={staff.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                       {editingStaffId === staff.id ? (
                         <>
@@ -642,7 +642,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
 
                   const headwayMinutes = scheduleCreate.headwayMinutes.trim();
                   const headway = headwayMinutes ? Number(headwayMinutes) : undefined;
-                  if (headwayMinutes && (!Number.isFinite(headway) || headway <= 0)) {
+                  if (headway !== undefined && (!Number.isFinite(headway) || headway <= 0)) {
                     setScheduleError('Headway must be a positive number.');
                     return;
                   }
@@ -1030,7 +1030,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ alerts, onResolveAlert
 
                                       const headwayMinutes = scheduleEdit.headwayMinutes.trim();
                                       const headway = headwayMinutes ? Number(headwayMinutes) : undefined;
-                                      if (headwayMinutes && (!Number.isFinite(headway) || headway <= 0)) {
+                                      if (headway !== undefined && (!Number.isFinite(headway) || headway <= 0)) {
                                         setScheduleError('Headway must be a positive number.');
                                         return;
                                       }
