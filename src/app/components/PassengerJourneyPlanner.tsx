@@ -421,10 +421,12 @@ export function PassengerJourneyPlanner({
         <button
           onClick={handleSearch}
           disabled={!fromStation || !toStation || loadState === 'loading'}
-          className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-orange-500 to-rose-600 font-semibold shadow-sm hover:shadow-md hover:from-orange-600 hover:to-rose-700"
+          className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold shadow-sm transition-all
+            enabled:bg-gradient-to-r enabled:from-orange-500 enabled:to-rose-600 enabled:text-white enabled:hover:shadow-md enabled:hover:from-orange-600 enabled:hover:to-rose-700
+            disabled:bg-slate-200 disabled:dark:bg-slate-700 disabled:text-slate-400 disabled:dark:text-slate-500 disabled:cursor-not-allowed"
         >
           {loadState === 'loading' ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-slate-400/30 border-t-slate-400 rounded-full animate-spin" />
           ) : (
             <Search className="w-4 h-4" />
           )}

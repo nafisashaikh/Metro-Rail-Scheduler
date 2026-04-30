@@ -116,7 +116,7 @@ export function SatelliteMap({
         ? stationPoints[Math.floor(stationPoints.length / 2)]
         : [19.076, 72.877];
 
-    mapRef.current = L.map(container, { zoomControl: false }).setView(center, 11);
+    mapRef.current = L.map(container, { zoomControl: false, zoomAnimation: false, zoomSnap: 0.5 }).setView(center, 11);
 
     const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap',
@@ -152,14 +152,20 @@ export function SatelliteMap({
   // Fit to route
   useEffect(() => {
     if (!mapRef.current || stationPoints.length === 0) return;
-    if (stationPoints.length === 1) {
-      mapRef.current.setView(stationPoints[0], 14);
-    } else {
-      mapRef.current.fitBounds(L.latLngBounds(stationPoints.map((p) => L.latLng(p[0], p[1]))), {
-        padding: [40, 40],
-        animate: true,
-      });
-    }
+    const map = mapRef.current;
+    // Use a short timeout so the map container is fully painted before fitting bounds
+    const t = window.setTimeout(() => {
+      if (!mapRef.current) return; // guard: component may have unmounted
+      if (stationPoints.length === 1) {
+        map.setView(stationPoints[0], 14, { animate: false });
+      } else {
+        map.fitBounds(L.latLngBounds(stationPoints.map((p) => L.latLng(p[0], p[1]))), {
+          padding: [40, 40],
+          animate: false,
+        });
+      }
+    }, 50);
+    return () => window.clearTimeout(t);
   }, [stationPoints]);
 
   // Satellite toggle
