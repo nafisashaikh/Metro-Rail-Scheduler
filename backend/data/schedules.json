@@ -1,5 +1,25 @@
 [
   {
+    "id": "sch-1777481554497-c4457c",
+    "station": "Andheri",
+    "line": "Line 1 – Versova–Ghatkopar",
+    "destination": "Borivali",
+    "departureTime": "10:00",
+    "platform": "1",
+    "status": "on-time",
+    "trainNumber": "MM-999",
+    "daysOfWeek": [
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+      "sat",
+      "sun"
+    ],
+    "published": true
+  },
+  {
     "id": "sch-001",
     "station": "Ghatkopar",
     "line": "Line 1 – Versova–Ghatkopar",

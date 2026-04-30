@@ -78,5 +78,35 @@
     "identifier": "testuser2782",
     "passwordSaltHex": "f6de61c4cbbae519ca1422e9f1eeebc0",
     "passwordHashHex": "23bbb0a0db3ad0f249fa245d0da1a33ebc89cb7b14c7d55bec6bcfeb1cb2c942fcd5a58362ac5c2351925a801f2b13e0d45cb0056821b5abff5b5c4f827f75ca"
+  },
+  {
+    "id": "p008",
+    "name": "Test User",
+    "role": "passenger",
+    "username": "user_test_999",
+    "cardNumber": "MPC-7006",
+    "identifier": "user_test_999",
+    "passwordSaltHex": "83753a74d8aebcf41df5cc9ba8adc75c",
+    "passwordHashHex": "59a8015b8c941273c878fcedcf2ed7299d76e1b2ce5b9e7b9d6b4f02f0d1494c90fe09f513848f3a3374f61051e0bc84b5b29c22a6de115e84de574351cf28a4"
+  },
+  {
+    "id": "p009",
+    "name": "Taufique Shaikh",
+    "role": "passenger",
+    "username": "taufique.shaikh@theemcoe.org",
+    "cardNumber": "MPC-7007",
+    "identifier": "taufique.shaikh@theemcoe.org",
+    "passwordSaltHex": "66073d89da839e8201620a3f69f1e300",
+    "passwordHashHex": "55023e6358b272e1e0e91359b33c98e949ae423287c323b46e2c4d4f2c8b7dc4404287144f4e122cc093b0342f919bf3c4a23a4ec4fdb07237644e0ad52a1b32"
+  },
+  {
+    "id": "p010",
+    "name": "Test User",
+    "role": "passenger",
+    "username": "testuser001",
+    "cardNumber": "MPC-7008",
+    "identifier": "testuser001",
+    "passwordSaltHex": "c5c6e184cdf4eec7dd15e7c198c508f8",
+    "passwordHashHex": "8c70fb5646b2aa36b6139d3199e8307004ce4e4ecc5de50c6927e77eb15b18b23d747d058762009e19d67b44182ca2c77c61ddb862d64f11bd7579d3ff594131"
   }
 ]

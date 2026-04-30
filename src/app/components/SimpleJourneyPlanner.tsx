@@ -109,22 +109,22 @@ export function SimpleJourneyPlanner() {
       <SavedRoutes onRouteSelect={handleSavedRouteSelect} />
 
       {/* Journey Planning Form */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-          <Search className="w-6 h-6 text-blue-600" />
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <Search className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           Plan Your Journey
         </h2>
 
         <div className="grid md:grid-cols-2 gap-4">
           {/* From Station */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               From Station
             </label>
             <select
               value={fromStation}
               onChange={(e) => setFromStation(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select departure station</option>
               {stations.map(station => (
@@ -137,13 +137,13 @@ export function SimpleJourneyPlanner() {
 
           {/* To Station */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               To Station
             </label>
             <select
               value={toStation}
               onChange={(e) => setToStation(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select destination station</option>
               {stations.map(station => (
@@ -158,18 +158,18 @@ export function SimpleJourneyPlanner() {
         <button
           onClick={planRoute}
           disabled={!fromStation || !toStation}
-          className="mt-4 w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="mt-4 w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
         >
           <ArrowRight className="w-5 h-5" />
           Find Best Route
         </button>
 
         {selectedRoute && (
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Recommended Route</h3>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Recommended Route</h3>
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-2">
                   <Clock className="w-4 h-4" />
                   <span>{selectedRoute.duration} minutes</span>
                   <span>•</span>
@@ -178,18 +178,18 @@ export function SimpleJourneyPlanner() {
                   <span>{selectedRoute.stopsCount} stops</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-sm rounded-full">
                     {selectedRoute.lineName}
                   </span>
-                  <ArrowRight className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">
+                  <ArrowRight className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-600 dark:text-slate-300">
                     {selectedRoute.fromStation.name} → {selectedRoute.toStation.name}
                   </span>
                 </div>
               </div>
               <button
                 onClick={handleSaveRoute}
-                className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
+                className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-red-200 dark:border-red-800"
               >
                 <Heart className="w-4 h-4" />
                 Save Route
