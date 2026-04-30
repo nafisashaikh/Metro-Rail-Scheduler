@@ -544,7 +544,7 @@ export function DashboardSection({
             style={{ minHeight: 480 }}
           >
             <div className="max-w-3xl mx-auto">
-              <AiHelpDesk />
+              <AiHelpDesk useRealAi={true} />
             </div>
           </div>
         )}
