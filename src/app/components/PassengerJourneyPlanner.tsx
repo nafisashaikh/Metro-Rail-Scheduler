@@ -349,10 +349,11 @@ export function PassengerJourneyPlanner({
       </div>
 
       {/* From → To + Search */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-3">
+        {/* Station selectors row */}
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
           {/* From */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block font-semibold">
               FROM STATION
             </label>
@@ -391,7 +392,7 @@ export function PassengerJourneyPlanner({
           </button>
 
           {/* To */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 block font-semibold">
               TO STATION
             </label>
@@ -414,21 +415,21 @@ export function PassengerJourneyPlanner({
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
-
-          {/* Search */}
-          <button
-            onClick={handleSearch}
-            disabled={!fromStation || !toStation || loadState === 'loading'}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 bg-gradient-to-r from-orange-500 to-rose-600 font-semibold"
-          >
-            {loadState === 'loading' ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Search className="w-4 h-4" />
-            )}
-            {loadState === 'loading' ? 'Loading…' : 'Search'}
-          </button>
         </div>
+
+        {/* Search — always on its own full-width row so it's never hidden */}
+        <button
+          onClick={handleSearch}
+          disabled={!fromStation || !toStation || loadState === 'loading'}
+          className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-orange-500 to-rose-600 font-semibold shadow-sm hover:shadow-md hover:from-orange-600 hover:to-rose-700"
+        >
+          {loadState === 'loading' ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Search className="w-4 h-4" />
+          )}
+          {loadState === 'loading' ? 'Searching…' : 'Search Trains'}
+        </button>
       </div>
 
       {/* Results area */}
